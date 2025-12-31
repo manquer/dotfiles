@@ -1,0 +1,34 @@
+# Ignore .git directories in config folders
+.config/**/.git
+.config/**/.git/**
+
+# Ignore editor state files
+**/.viminfo
+**/.lesshst
+
+# Ignore history files
+**/*_history
+**/.zsh_history
+**/.bash_history
+**/.node_repl_history
+**/.psql_history
+
+# Ignore completion cache
+**/.zcompdump*
+
+# Ignore temporary and cache files
+**/.DS_Store
+**/node_modules
+**/__pycache__
+
+# Ignore credential files (if accidentally added)
+**/.netrc
+**/.sentryclirc
+
+# Ignore SSH keys (config is fine, but not private keys)
+.ssh/id_*
+.ssh/*.pem
+.ssh/*.key
+
+# Ignore known_hosts (can change frequently)
+.ssh/known_hosts*

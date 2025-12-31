@@ -1,0 +1,9 @@
+
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+export  DOCKER_HOST="unix://$HOME/.colima/docker.sock"
+
+
+# Added by Toolbox App
+export PATH="$PATH:/Users/mani/Library/Application Support/JetBrains/Toolbox/scripts"
+
