@@ -1,0 +1,8 @@
+"languageserver": {
+  "graphql": {
+    "command": "graphql-lsp",
+    "args": ["server", "-m", "stream"],
+    // customize filetypes to your needs
+    "filetypes": ["typescript", "typescriptreact", "graphql"]
+  }
+}

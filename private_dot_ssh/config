@@ -1,0 +1,18 @@
+Include /Users/mani/.colima/ssh_config
+
+ServerAliveInterval 60
+
+# DevPod Start supergraph-dev.devpod
+Host supergraph-dev.devpod
+  ForwardAgent yes
+  LogLevel error
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  HostKeyAlgorithms rsa-sha2-256,rsa-sha2-512,ssh-rsa
+  ProxyCommand "/Applications/DevPod.app/Contents/MacOS/devpod-cli" ssh --stdio --context default --user node supergraph-dev --workdir "/workspace" --gpg-agent-forwarding
+  User node
+# DevPod End supergraph-dev.devpod
+Host 172.16.10.10
+  IdentityFile ~/.ssh/id_az25
+  IdentitiesOnly=yes
+  User tv

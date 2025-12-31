@@ -1,0 +1,74 @@
+[column]
+  ui = auto
+
+[branch]
+  sort = -committerdate
+
+[init]
+  defaultBranch = develop
+
+[diff]
+  algorithm = histogram
+  colorMoved = plain
+  mnemonicPrefix = true
+  renames = true
+
+[push]
+  default = simple
+  autoSetupRemote = true
+  followTags = true
+
+[fetch]
+  prune = true
+  pruneTags = true
+  all = true
+
+[user]
+  name = Mani Ka
+  email = mani@talview.com
+  signingkey = 6F440E3DB4823F8F
+
+[tag]
+  gpgSign = true
+  sort = version:refname
+
+[core]
+  editor = nvim
+  pager = delta
+
+[commit]
+  verbose = true
+  gpgsign = true
+
+[help]
+  autocorrect = prompt
+
+[rebase]
+  autoSquash = true
+  autoStash = true
+  updateRefs = true
+
+[rerere]
+  enabled = true
+  autoupdate = true
+
+[delta]
+  navigate = true # use n and N to move between diff sections
+  dark = true      # or light = true, or omit for auto-detection
+  side-by-side = true
+  line-numbers = true		
+
+[interactive]
+  diffFilter = delta --color-only
+
+[merge]
+  conflictstyle = zdiff3
+
+[lfs]
+  allowincompletepush = true
+
+[filter "lfs"]
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
