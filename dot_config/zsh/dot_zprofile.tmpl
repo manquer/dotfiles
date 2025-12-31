@@ -1,0 +1,19 @@
+# Profile settings - loaded for login shells
+
+{{ if .machine.isDarwin }}
+# Homebrew
+if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+{{ end }}
+
+{{ if .machine.isLinux }}
+# Linux-specific paths
+{{ end }}
+
+# Load environment file if it exists
+if [[ -f "${HOME}/.env" ]]; then
+    set -a
+    source "${HOME}/.env"
+    set +a
+fi

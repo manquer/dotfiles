@@ -1,0 +1,34 @@
+# Completion configuration
+
+# Initialize completion system
+autoload -Uz compinit
+
+# Load completions once a day
+if [[ -n ${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump(#qN.mh+24) ]]; then
+    compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
+else
+    compinit -C -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
+fi
+
+# Graphite (gt) completions
+if command -v gt &>/dev/null; then
+    _gt_yargs_completions()
+    {
+      local reply
+      local si=$IFS
+      IFS=$'\n' reply=($(COMP_CWORD="$((CURRENT-1))" COMP_LINE="$BUFFER" COMP_POINT="$CURSOR" gt --get-yargs-completions "${words[@]}"))
+      IFS=$si
+      _describe 'values' reply
+    }
+    compdef _gt_yargs_completions gt
+fi
+
+# kubectl completions
+if command -v kubectl &>/dev/null; then
+    source <(kubectl completion zsh)
+fi
+
+# GitHub CLI completions
+if command -v gh &>/dev/null; then
+    eval "$(gh completion -s zsh)"
+fi

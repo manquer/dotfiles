@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euo pipefail
+
+SSH_DIR="{{ .chezmoi.homeDir }}/.ssh"
+
+if [[ ! -f "${SSH_DIR}/id_ed25519" ]]; then
+    echo "Generating SSH key..."
+    ssh-keygen -t ed25519 -C "{{ .git.email }}" -f "${SSH_DIR}/id_ed25519" -N ""
+
+    {{ if .machine.isDarwin }}
+    # Add to macOS keychain
+    ssh-add --apple-use-keychain "${SSH_DIR}/id_ed25519"
+    {{ end }}
+
+    echo "SSH key generated: ${SSH_DIR}/id_ed25519.pub"
+    echo "Add this to your GitHub/GitLab account:"
+    cat "${SSH_DIR}/id_ed25519.pub"
+else
+    echo "SSH key already exists, skipping..."
+fi

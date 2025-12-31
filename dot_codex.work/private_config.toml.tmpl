@@ -1,0 +1,40 @@
+model_provider = "litellm"
+model = "gpt-5.1-codex"
+sandbox = "danger-full-access"
+
+notify = ["python3", "{{ .chezmoi.homeDir }}/.codex/notify.py"]
+model_reasoning_effort = "high"
+
+
+[projects."{{ .chezmoi.homeDir }}/git/talview/apis/supergraph"]
+trust_level = "trusted"
+
+[projects."{{ .chezmoi.homeDir }}/git/talview/infra/prod-cluster"]
+trust_level = "trusted"
+
+[projects."{{ .chezmoi.homeDir }}/git/talview/apis"]
+trust_level = "trusted"
+
+[projects."{{ .chezmoi.homeDir }}/.config/nvim"]
+trust_level = "untrusted"
+
+[projects."{{ .chezmoi.homeDir }}/git/talview/frontend/webclients"]
+trust_level = "trusted"
+
+[model_providers.litellm]
+name = "LiteLLM"
+base_url = {{ .codex.baseUrl | quote }}
+env_key = "LITELLM_API_KEY"
+wire_api = "responses"
+
+
+[shell_environment_policy]
+inherit = "all"
+
+
+[mcp_servers]
+
+
+[notice]
+hide_gpt5_1_migration_prompt = true
+"hide_gpt-5.1-codex-max_migration_prompt" = true

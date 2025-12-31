@@ -24,9 +24,9 @@
   all = true
 
 [user]
-  name = Mani Ka
-  email = mani@talview.com
-  signingkey = 6F440E3DB4823F8F
+  name = {{ .git.name }}
+  email = {{ .git.email }}
+  signingkey = {{ .git.signingkey }}
 
 [tag]
   gpgSign = true

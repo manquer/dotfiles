@@ -1,0 +1,63 @@
+# Environment variables
+# This file is sourced by shell configuration files
+
+{{ if .machine.isWork }}
+# Work-specific environment variables
+
+# GitHub
+export GITHUB_TOKEN="${GITHUB_TOKEN:-}"
+
+# Sentry
+export SENTRY_AUTH_TOKEN="${SENTRY_AUTH_TOKEN:-}"
+
+# Northflank
+export NORTHFLANK_API_TOKEN="${NORTHFLANK_API_TOKEN:-}"
+
+# LiteLLM (Codex)
+export LITELLM_API_KEY="${LITELLM_API_KEY:-}"
+
+# AWS
+export AWS_PROFILE="work-profile"
+export AWS_REGION="us-east-1"
+
+# Node
+export NODE_ENV="production"
+
+{{ else }}
+# Personal environment variables
+
+# GitHub
+export GITHUB_TOKEN="${GITHUB_TOKEN:-}"
+
+# Node
+export NODE_ENV="development"
+
+{{ end }}
+
+# Common environment variables
+
+# Editor
+export EDITOR="nvim"
+export VISUAL="nvim"
+
+# Pager
+export PAGER="less"
+export LESS="-R"
+
+# Colors
+export CLICOLOR=1
+
+{{ if .machine.isDarwin }}
+# macOS specific environment
+export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
+
+# Homebrew
+export HOMEBREW_NO_ANALYTICS=1
+export HOMEBREW_NO_AUTO_UPDATE=1
+
+{{ end }}
+
+{{ if .machine.isLinux }}
+# Linux specific environment
+
+{{ end }}

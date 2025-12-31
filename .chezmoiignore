@@ -32,3 +32,8 @@
 
 # Ignore known_hosts (can change frequently)
 .ssh/known_hosts*
+
+# Ignore work-specific configs on personal machines
+{{ if .machine.isPersonal }}
+.codex.work/
+{{ end }}

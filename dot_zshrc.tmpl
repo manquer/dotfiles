@@ -1,0 +1,44 @@
+# Enable Powerlevel10k instant prompt
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# Oh My Zsh configuration
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+# Plugins
+plugins=(git)
+
+source $ZSH/oh-my-zsh.sh
+
+# Load modular zsh configuration
+ZSH_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
+
+# Source all configuration files in conf.d
+if [[ -d "${ZSH_CONFIG_DIR}/conf.d" ]]; then
+    for config_file in "${ZSH_CONFIG_DIR}"/conf.d/*.zsh(N); do
+        source "$config_file"
+    done
+fi
+
+# Source shared aliases
+if [[ -f ~/.aliases.zsh ]]; then
+    source ~/.aliases.zsh
+fi
+
+# Powerlevel10k configuration
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Machine-specific configurations
+{{ if .machine.isDarwin }}
+# macOS specific settings
+{{ end }}
+
+{{ if .machine.isLinux }}
+# Linux specific settings
+{{ end }}
+
+{{ if .machine.isWork }}
+# Work-specific settings
+{{ end }}
