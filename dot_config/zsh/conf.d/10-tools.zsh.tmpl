@@ -1,0 +1,63 @@
+# Tool initialization - order matters!
+
+# asdf version manager
+if [[ -d "${ASDF_DATA_DIR:-$HOME/.asdf}" ]]; then
+    export ASDF_DATA_DIR="${ASDF_DATA_DIR:-$HOME/.asdf}"
+    path=("${ASDF_DATA_DIR}/shims" $path)
+    fpath=("${ASDF_DATA_DIR}/completions" $fpath)
+fi
+
+# nvm (Node Version Manager)
+if [[ -d "${HOME}/.nvm" ]]; then
+    export NVM_DIR="${HOME}/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+fi
+
+# Conda (if needed - user mentioned NOT wanting this, so commenting out)
+# if [[ -f "${HOME}/miniconda3/bin/conda" ]]; then
+#     __conda_setup="$("${HOME}/miniconda3/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
+#     if [ $? -eq 0 ]; then
+#         eval "$__conda_setup"
+#     else
+#         if [ -f "${HOME}/miniconda3/etc/profile.d/conda.sh" ]; then
+#             . "${HOME}/miniconda3/etc/profile.d/conda.sh"
+#         else
+#             export PATH="${HOME}/miniconda3/bin:$PATH"
+#         fi
+#     fi
+#     unset __conda_setup
+# fi
+
+# atuin - shell history
+if [[ -d "${HOME}/.atuin/bin" ]]; then
+    . "${HOME}/.atuin/bin/env"
+    eval "$(atuin init zsh)"
+elif command -v atuin &>/dev/null; then
+    eval "$(atuin init zsh)"
+fi
+
+# zoxide - smarter cd
+if command -v zoxide &>/dev/null; then
+    eval "$(zoxide init zsh)"
+fi
+
+# fzf - fuzzy finder
+if command -v fzf &>/dev/null; then
+{{ if .machine.isDarwin }}
+    if [[ -f /opt/homebrew/opt/fzf/shell/key-bindings.zsh ]]; then
+        source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+        source /opt/homebrew/opt/fzf/shell/completion.zsh
+    fi
+{{ else if .machine.isLinux }}
+    if [[ -f /usr/share/fzf/key-bindings.zsh ]]; then
+        source /usr/share/fzf/key-bindings.zsh
+        source /usr/share/fzf/completion.zsh
+    fi
+{{ end }}
+fi
+
+# direnv - directory-specific environment
+if command -v direnv &>/dev/null; then
+    eval "$(direnv hook zsh)"
+fi

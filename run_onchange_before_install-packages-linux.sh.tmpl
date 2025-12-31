@@ -1,0 +1,130 @@
+#!/bin/bash
+{{ if .machine.isLinux }}
+set -euo pipefail
+
+echo "Installing Linux packages..."
+
+{{ if .machine.isArch }}
+# Arch Linux with pacman
+echo "Detected Arch Linux - using pacman..."
+
+# Update package database
+sudo pacman -Sy
+
+# Install packages
+sudo pacman -S --needed --noconfirm \
+    git curl wget \
+    zsh bash fish \
+    tmux zellij \
+    neovim vim \
+    base-devel \
+    python python-pip \
+    nodejs npm \
+    go rust \
+    ripgrep fd bat \
+    fzf eza \
+    htop btop \
+    ncdu tree \
+    jq yq \
+    docker \
+    kubectl helm \
+    terraform \
+    ansible \
+    aws-cli \
+    shellcheck \
+    asciinema \
+    redis \
+    openssh \
+    gnupg \
+    chezmoi
+
+{{ if .machine.hasGui }}
+# GUI applications (only if GUI is present)
+echo "GUI detected - installing GUI applications..."
+
+sudo pacman -S --needed --noconfirm \
+    firefox \
+    kitty \
+    alacritty
+
+{{ end }}
+
+echo "Arch Linux packages installed successfully!"
+
+{{ else }}
+# Debian/Ubuntu with apt
+if command -v apt-get &>/dev/null; then
+    echo "Detected Debian/Ubuntu - using apt..."
+
+    sudo apt-get update
+    sudo apt-get install -y \
+        git curl wget \
+        zsh bash fish \
+        tmux \
+        neovim vim \
+        build-essential \
+        python3 python3-pip \
+        nodejs npm \
+        golang rustc cargo \
+        ripgrep fd-find bat \
+        fzf \
+        htop \
+        ncdu tree \
+        jq \
+        docker.io \
+        kubectl \
+        terraform \
+        ansible \
+        shellcheck \
+        asciinema \
+        redis-server \
+        openssh-client \
+        gnupg
+
+{{ if .machine.hasGui }}
+    # GUI applications
+    sudo apt-get install -y \
+        firefox \
+        kitty
+{{ end }}
+fi
+
+# Fedora/RHEL with dnf
+if command -v dnf &>/dev/null; then
+    echo "Detected Fedora/RHEL - using dnf..."
+
+    sudo dnf install -y \
+        git curl wget \
+        zsh bash fish \
+        tmux \
+        neovim vim \
+        gcc python3-pip \
+        nodejs npm \
+        golang rust cargo \
+        ripgrep fd-find bat \
+        fzf \
+        htop \
+        ncdu tree \
+        jq \
+        docker \
+        kubectl \
+        terraform \
+        ansible \
+        shellcheck \
+        asciinema \
+        redis \
+        openssh \
+        gnupg
+
+{{ if .machine.hasGui }}
+    # GUI applications
+    sudo dnf install -y \
+        firefox \
+        kitty
+{{ end }}
+fi
+
+{{ end }}
+
+echo "Linux packages installed successfully!"
+{{ end }}

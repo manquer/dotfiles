@@ -1,0 +1,181 @@
+#!/bin/bash
+
+set -eufo pipefail
+
+echo "Installing Homebrew packages and applications..."
+
+# Check if Homebrew is installed
+if ! command -v brew &> /dev/null; then
+    echo "Homebrew not found. Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+# Run brew bundle with inline Brewfile
+brew bundle --no-lock --file=/dev/stdin <<EOF
+
+# Taps
+tap "homebrew/bundle"
+tap "homebrew/cask-fonts"
+tap "withgraphite/tap"
+
+# CLI Tools - Version Control
+brew "git"
+brew "gh"              # GitHub CLI
+brew "git-lfs"         # Git Large File Storage
+brew "git-delta"       # Better git diff
+brew "graphite"        # Modern Git workflow CLI
+
+# CLI Tools - Shell & Terminal
+brew "zsh"
+brew "bash"
+brew "fish"            # Friendly interactive shell
+brew "tmux"
+brew "zellij"          # Modern terminal multiplexer
+brew "starship"        # Modern shell prompt
+brew "atuin"           # Shell history with sync
+
+# CLI Tools - Development
+brew "asdf"            # Version manager for multiple languages
+brew "neovim"
+brew "vim"
+brew "helix"           # Modern modal editor
+brew "node"
+brew "python@3.12"
+brew "go"
+brew "rust"
+brew "jq"              # JSON processor
+brew "yq"              # YAML processor
+brew "tree"            # Directory tree viewer
+brew "ripgrep"         # Fast grep alternative
+brew "fd"              # Fast find alternative
+brew "bat"             # Better cat with syntax highlighting
+brew "eza"             # Modern ls replacement
+brew "fzf"             # Fuzzy finder
+brew "tldr"            # Simplified man pages
+brew "direnv"          # Directory-specific environment variables
+brew "zoxide"          # Smarter cd command
+
+# CLI Tools - DevOps & Cloud
+brew "docker"
+brew "colima"          # Container runtime for macOS
+brew "podman"          # Alternative container runtime
+brew "podman-compose"  # Docker compose for Podman
+brew "kubectl"
+brew "helm"            # Kubernetes package manager
+brew "terraform"
+brew "ansible"
+brew "awscli"
+brew "azure-cli"
+brew "doctl"           # DigitalOcean CLI
+brew "temporal"        # Workflow orchestration
+
+# CLI Tools - Utilities
+brew "wget"
+brew "curl"
+brew "htop"
+brew "ncdu"            # Disk usage analyzer
+brew "watch"
+brew "gnupg"
+brew "openssh"
+brew "chezmoi"         # Dotfile manager
+brew "httpie"          # Modern HTTP client
+brew "glow"            # Markdown renderer
+brew "slides"          # Terminal-based presentation tool
+brew "mosh"            # Mobile shell
+brew "parallel"        # Execute jobs in parallel
+brew "shellcheck"      # Shell script linter
+brew "vale"            # Prose linter
+brew "cloc"            # Count lines of code
+brew "speedtest-cli"   # Internet speed test
+brew "asciinema"       # Terminal session recorder
+brew "redis"           # In-memory database
+brew "uv"              # Fast Python package manager
+brew "sentry-cli"      # Sentry command-line client
+brew "task"            # Task management
+brew "timewarrior"     # Time tracking
+brew "terminal-notifier" # Send macOS notifications from CLI
+
+{{ if .machine.hasGui }}
+# GUI Applications - Development
+cask "iterm2"
+cask "postman"
+cask "tableplus"       # Database GUI
+
+# GUI Applications - Browsers
+cask "google-chrome"
+cask "firefox"
+
+# GUI Applications - Communication
+cask "slack"
+cask "discord"
+cask "zoom"
+
+# GUI Applications - Productivity
+cask "notion"
+cask "obsidian"
+cask "rectangle"       # Window manager
+cask "raycast"         # Spotlight alternative
+cask "caffeine"        # Keep Mac awake
+
+# GUI Applications - Utilities
+cask "the-unarchiver"
+cask "appcleaner"
+cask "keepingyouawake"
+cask "stats"           # System monitor in menu bar
+{{ end }}
+
+# Fonts
+cask "font-fira-code-nerd-font"
+cask "font-jetbrains-mono-nerd-font"
+cask "font-hack-nerd-font"
+
+# Mac App Store apps (requires mas)
+brew "mas"
+# mas "Xcode", id: 497799835
+# mas "1Password", id: 1333542190
+
+EOF
+
+echo "Homebrew packages and applications installed successfully!"
+
+# Install nvm (Node Version Manager)
+if [ ! -d "$HOME/.nvm" ]; then
+    echo "Installing nvm..."
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    echo "nvm installed successfully!"
+else
+    echo "nvm already installed, skipping..."
+fi
+
+# Install global npm packages
+if command -v npm &> /dev/null; then
+    echo "Installing global npm packages..."
+
+    npm install -g \
+        @anthropic-ai/claude-code \
+        @openai/codex \
+        @devcontainers/cli \
+        @mermaid-js/mermaid-cli \
+        @usebruno/cli \
+        @northflank/cli \
+        aws-cdk \
+        concurrently \
+        dotenv-cli \
+        esbuild \
+        fast-cli \
+        graphql-cli \
+        jest \
+        neonctl \
+        nx \
+        terminalizer \
+        ts-node \
+        tsx \
+        typescript \
+        webpack-cli
+
+    echo "Global npm packages installed successfully!"
+else
+    echo "npm not found. Skipping npm package installation."
+fi

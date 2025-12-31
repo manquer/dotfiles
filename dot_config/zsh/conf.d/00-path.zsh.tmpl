@@ -1,0 +1,41 @@
+# Path management - loaded early
+# Ensure unique path entries
+typeset -U path
+
+# Local binaries
+path=(
+    "${HOME}/.local/bin"
+    $path
+)
+
+{{ if .machine.isDarwin }}
+# macOS paths
+path=(
+    /opt/homebrew/bin
+    /opt/homebrew/sbin
+    /opt/homebrew/opt/curl/bin
+    /usr/local/opt/libpq/bin
+    $path
+)
+{{ end }}
+
+# Cargo (Rust)
+if [[ -d "${HOME}/.cargo/bin" ]]; then
+    path=("${HOME}/.cargo/bin" $path)
+fi
+
+# Perl
+if [[ -d "${HOME}/perl5/bin" ]]; then
+    path=("${HOME}/perl5/bin" $path)
+    export PERL5LIB="${HOME}/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"
+    export PERL_LOCAL_LIB_ROOT="${HOME}/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"
+    export PERL_MB_OPT="--install_base \"${HOME}/perl5\""
+    export PERL_MM_OPT="INSTALL_BASE=${HOME}/perl5"
+fi
+
+{{ if .machine.isWork }}
+# Work-specific paths
+if [[ -d "${HOME}/Library/Application Support/JetBrains/Toolbox/scripts" ]]; then
+    path=("${HOME}/Library/Application Support/JetBrains/Toolbox/scripts" $path)
+fi
+{{ end }}
