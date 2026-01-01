@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y \
     sshpass \
     rsync \
     make \
+    gcc \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Ansible and dependencies
@@ -45,7 +47,6 @@ USER ansible
 # Set environment variables
 ENV ANSIBLE_CONFIG=/ansible/ansible.cfg
 ENV ANSIBLE_HOST_KEY_CHECKING=False
-ENV ANSIBLE_STDOUT_CALLBACK=yaml
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

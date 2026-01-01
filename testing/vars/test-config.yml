@@ -5,8 +5,10 @@ test_git_name: "Test User"
 test_git_email: "test@example.com"
 test_git_signingkey: ""
 
-# Dotfiles repository (mounted in container)
+# Dotfiles repository
 dotfiles_source: /dotfiles
+dotfiles_git_repo: "https://github.com/manquer/dotfiles.git"
+dotfiles_git_branch: main
 
 # Test environment settings
 test_shell: /bin/bash
