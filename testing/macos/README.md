@@ -11,7 +11,7 @@ Unlike Linux container testing (which uses Docker), macOS testing requires a VM 
 
 ## Option 1: Tart (Recommended)
 
-Tart is the recommended solution as it provides native macOS virtualization with better performance and easier setup.
+Tart is the recommended solution as it provides native macOS virtualization using Apple's Virtualization.framework with easier setup.
 
 ### Installation
 
@@ -164,17 +164,10 @@ Once your macOS VM is running and accessible via SSH:
 - Check ansible_user and ansible_password in inventory
 - Consider using SSH key authentication instead of password
 
-### VM performance issues
-
-- Allocate more CPU/RAM to the VM (see Tart/Lima config)
-- Close other resource-intensive applications
-- Use `--no-graphics` flag for headless operation
-
 ## Differences from Linux Testing
 
 | Aspect | Linux (Docker) | macOS (VM) |
 |--------|----------------|------------|
-| Speed | Fast (containers) | Slower (full VM) |
 | Isolation | Process-level | Full OS isolation |
 | Setup | Automatic | Manual VM configuration |
 | Resources | Lightweight | Heavier (requires full macOS) |
