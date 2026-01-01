@@ -375,18 +375,6 @@ test-dotfiles:
    make test-docker-verify
    ```
 
-## Performance
-
-### Linux (Docker)
-- **Build time**: ~1-2 minutes (first time)
-- **Test runtime**: ~1 minute (Arch Linux)
-- **Full test suite**: ~2-3 minutes
-
-### macOS (VM)
-- **VM setup**: ~5-10 minutes (first time)
-- **Test runtime**: ~2-3 minutes
-- **Note**: VM-based testing is slower than containers
-
 ## Requirements
 
 ### Linux Testing (Docker)
