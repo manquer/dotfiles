@@ -100,7 +100,12 @@
 
     - name: Initialize chezmoi with test configuration
       ansible.builtin.shell: |
-        /usr/local/bin/chezmoi init --source /tmp/dotfiles-test --promptDefaults
+        /usr/local/bin/chezmoi init --source /tmp/dotfiles-test \
+          --promptString machine.type=personal \
+          --promptString git.name="Test User" \
+          --promptString git.email="test@example.com" \
+          --promptString git.signingkey="" \
+          --promptDefaults
       args:
         creates: "{{ test_home }}/.local/share/chezmoi"
       become: "{{ ansible_os_family != 'Darwin' }}"
