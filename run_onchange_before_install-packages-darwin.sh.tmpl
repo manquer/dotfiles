@@ -23,6 +23,9 @@ brew "git"
 brew "gh"              # GitHub CLI
 brew "git-lfs"         # Git Large File Storage
 brew "git-delta"       # Better git diff
+brew "git-extras"      # Advanced git commands
+brew "git-filter-repo" # Fast git history rewriting
+brew "git-crypt"       # Transparent file encryption in git
 brew "graphite"        # Modern Git workflow CLI
 
 # CLI Tools - Shell & Terminal
@@ -40,9 +43,16 @@ brew "neovim"
 brew "vim"
 brew "helix"           # Modern modal editor
 brew "node"
+brew "deno"            # Modern JavaScript/TypeScript runtime
 brew "python@3.12"
 brew "go"
 brew "rust"
+brew "ruby"            # Ruby programming language
+brew "php"             # PHP programming language
+brew "composer"        # PHP dependency manager
+brew "elixir"          # Elixir functional programming language
+brew "lua"             # Lua scripting language
+brew "openjdk"         # Java Development Kit
 brew "jq"              # JSON processor
 brew "yq"              # YAML processor
 brew "tree"            # Directory tree viewer
@@ -54,6 +64,10 @@ brew "fzf"             # Fuzzy finder
 brew "tldr"            # Simplified man pages
 brew "direnv"          # Directory-specific environment variables
 brew "zoxide"          # Smarter cd command
+brew "watchman"        # File watching service
+brew "ctags"           # Universal ctags for code navigation
+brew "the_silver_searcher" # Fast code search tool
+brew "graphviz"        # Graph visualization software
 
 # CLI Tools - DevOps & Cloud
 brew "docker"
@@ -62,31 +76,48 @@ brew "podman"          # Alternative container runtime
 brew "podman-compose"  # Docker compose for Podman
 brew "kubectl"
 brew "helm"            # Kubernetes package manager
+brew "argocd"          # GitOps continuous delivery for Kubernetes
 brew "terraform"
 brew "ansible"
 brew "awscli"
+brew "aws-sam-cli"     # AWS Serverless Application Model CLI
 brew "azure-cli"
+brew "azcopy"          # Azure Storage data transfer utility
+brew "azd"             # Azure Developer CLI
+brew "kubelogin"       # Kubernetes credential plugin for Azure AD
 brew "doctl"           # DigitalOcean CLI
 brew "temporal"        # Workflow orchestration
+brew "tcld"            # Temporal Cloud CLI
+brew "crane"           # Container registry interaction tool
+brew "skopeo"          # Work with container images and registries
+brew "buildkit"        # Modern Docker build engine
+brew "rover"           # GraphQL CLI for Apollo Federation
 
 # CLI Tools - Utilities
 brew "wget"
 brew "curl"
 brew "htop"
+brew "btop"            # Resource monitor (better than htop)
 brew "ncdu"            # Disk usage analyzer
 brew "watch"
 brew "gnupg"
 brew "openssh"
 brew "chezmoi"         # Dotfile manager
 brew "httpie"          # Modern HTTP client
+brew "posting"         # Modern HTTP client TUI
 brew "glow"            # Markdown renderer
 brew "slides"          # Terminal-based presentation tool
+brew "presenterm"      # Terminal-based presentation tool
 brew "mosh"            # Mobile shell
 brew "parallel"        # Execute jobs in parallel
+brew "moreutils"       # Unix utilities (sponge, vidir, ts)
 brew "shellcheck"      # Shell script linter
+brew "bats-core"       # Bash Automated Testing System
 brew "vale"            # Prose linter
 brew "cloc"            # Count lines of code
 brew "speedtest-cli"   # Internet speed test
+brew "gping"           # Ping with a graph
+brew "iftop"           # Network bandwidth monitoring
 brew "asciinema"       # Terminal session recorder
 brew "redis"           # In-memory database
 brew "uv"              # Fast Python package manager
@@ -94,6 +125,15 @@ brew "sentry-cli"      # Sentry command-line client
 brew "task"            # Task management
 brew "timewarrior"     # Time tracking
 brew "terminal-notifier" # Send macOS notifications from CLI
+brew "blueutil"        # Bluetooth CLI utility for macOS
+brew "jwt-cli"         # JSON Web Token CLI tool
+brew "ascii-image-converter" # Convert images to ASCII art
+brew "yt-dlp"          # Feature-rich YouTube downloader
+brew "yamllint"        # YAML linter
+brew "lynx"            # Text-based web browser
+brew "telnet"          # Telnet client for debugging
+brew "zx"              # Shell scripting with JavaScript
+brew "qodana"          # JetBrains code quality platform CLI
 
 {{ if .machine.hasGui }}
 # GUI Applications - Development
