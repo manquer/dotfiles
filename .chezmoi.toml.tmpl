@@ -1,25 +1,25 @@
-{{- /* Detect OS */ -}}
+{{- /* Detect OS */}}
 {{- $isDarwin := eq .chezmoi.os "darwin" -}}
 {{- $isLinux := eq .chezmoi.os "linux" -}}
 {{- $isArch := and $isLinux (stat "/etc/arch-release") -}}
 
-{{- /* Detect machine type */ -}}
+{{- /* Detect machine type */}}
 {{- $machineType := "personal" -}}
 {{- if or (contains "work" .chezmoi.hostname) (contains "corp" .chezmoi.hostname) (contains "talview" .chezmoi.hostname) -}}
 {{-   $machineType = "work" -}}
 {{- end -}}
 {{- $machineType := promptStringOnce . "machine.type" "Machine type (work/personal)" $machineType -}}
 
-{{- /* Detect GUI environment */ -}}
+{{- /* Detect GUI environment */}}
 {{- $hasGui := false -}}
 {{- if $isDarwin -}}
 {{-   $hasGui = true -}}
 {{- else if $isLinux -}}
-{{-   /* Check for X11 or Wayland */ -}}
+{{-   /* Check for X11 or Wayland */}}
 {{-   $hasGui = or (env "DISPLAY") (env "WAYLAND_DISPLAY") -}}
 {{- end -}}
 
-{{- /* Prompt for work-specific data */ -}}
+{{- /* Prompt for work-specific data */}}
 {{- $name := promptStringOnce . "git.name" "Git user name" -}}
 {{- $email := promptStringOnce . "git.email" "Git user email" -}}
 {{- $signingkey := promptStringOnce . "git.signingkey" "Git GPG signing key (leave empty if none)" -}}

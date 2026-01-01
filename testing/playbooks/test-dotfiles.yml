@@ -1,7 +1,6 @@
 ---
 - name: Test Dotfiles Deployment
-  hosts: docker_test
-  become: yes
+  hosts: all
   gather_facts: yes
 
   vars_files:
@@ -20,11 +19,18 @@
         update_cache: yes
         cache_valid_time: 3600
       when: ansible_os_family == "Debian"
+      become: yes
 
     - name: Update package cache (Arch)
       community.general.pacman:
         update_cache: yes
       when: ansible_os_family == "Archlinux"
+      become: yes
+
+    - name: Update Homebrew (macOS)
+      community.general.homebrew:
+        update_homebrew: yes
+      when: ansible_os_family == "Darwin"
 
   tasks:
     - name: Install prerequisites
@@ -39,6 +45,7 @@
               - python3-pip
             state: present
           when: ansible_os_family == "Debian"
+          become: yes
 
         - name: Install base packages (Arch)
           community.general.pacman:
@@ -50,6 +57,16 @@
               - python-pip
             state: present
           when: ansible_os_family == "Archlinux"
+          become: yes
+
+        - name: Install base packages (macOS)
+          community.general.homebrew:
+            name:
+              - curl
+              - git
+              - wget
+            state: present
+          when: ansible_os_family == "Darwin"
 
     - name: Install chezmoi
       ansible.builtin.shell: |
@@ -59,7 +76,7 @@
       become: yes
 
     - name: Verify chezmoi installation
-      ansible.builtin.command: chezmoi --version
+      ansible.builtin.command: /usr/local/bin/chezmoi --version
       register: chezmoi_version
       changed_when: false
 
@@ -67,43 +84,57 @@
       ansible.builtin.debug:
         var: chezmoi_version.stdout
 
+    - name: Set test user
+      ansible.builtin.set_fact:
+        test_user: "{{ 'testuser' if ansible_os_family != 'Darwin' else ansible_user }}"
+        test_home: "{{ '/home/testuser' if ansible_os_family != 'Darwin' else '/Users/' + ansible_user }}"
+
+    - name: Clone dotfiles repository
+      ansible.builtin.git:
+        repo: "{{ dotfiles_git_repo }}"
+        dest: /tmp/dotfiles-test
+        version: "{{ dotfiles_git_branch }}"
+        force: yes
+      become: yes
+      when: dotfiles_git_repo is defined and dotfiles_git_repo != ""
+
     - name: Initialize chezmoi with test configuration
       ansible.builtin.shell: |
-        chezmoi init --source /dotfiles
+        /usr/local/bin/chezmoi init --source /tmp/dotfiles-test
       args:
-        creates: /home/testuser/.local/share/chezmoi
-      become: yes
-      become_user: testuser
+        creates: "{{ test_home }}/.local/share/chezmoi"
+      become: "{{ ansible_os_family != 'Darwin' }}"
+      become_user: "{{ test_user if ansible_os_family != 'Darwin' else omit }}"
       environment:
-        HOME: /home/testuser
+        HOME: "{{ test_home }}"
 
     - name: Test chezmoi in dry-run mode
-      ansible.builtin.command: chezmoi apply --dry-run --verbose
+      ansible.builtin.command: /usr/local/bin/chezmoi apply --dry-run --verbose
       register: chezmoi_dryrun
       changed_when: false
-      become: yes
-      become_user: testuser
+      become: "{{ ansible_os_family != 'Darwin' }}"
+      become_user: "{{ test_user if ansible_os_family != 'Darwin' else omit }}"
       environment:
-        HOME: /home/testuser
+        HOME: "{{ test_home }}"
       failed_when: false
 
     - name: Display dry-run results
       ansible.builtin.debug:
         var: chezmoi_dryrun.stdout_lines
 
-    - name: Check for Linux package installation script
+    - name: Check for package installation script
       ansible.builtin.stat:
-        path: /home/testuser/.local/share/chezmoi/run_onchange_before_install-packages-linux.sh.tmpl
-      register: linux_install_script
-      become: yes
-      become_user: testuser
+        path: "{{ test_home }}/.local/share/chezmoi/run_onchange_before_install-packages-{{ 'linux' if ansible_os_family != 'Darwin' else 'darwin' }}.sh.tmpl"
+      register: package_install_script
+      become: "{{ ansible_os_family != 'Darwin' }}"
+      become_user: "{{ test_user if ansible_os_family != 'Darwin' else omit }}"
 
     - name: Verify package installation script exists
       ansible.builtin.assert:
         that:
-          - linux_install_script.stat.exists
-        fail_msg: "Linux package installation script not found"
-        success_msg: "Linux package installation script found"
+          - package_install_script.stat.exists
+        fail_msg: "Package installation script not found for {{ ansible_os_family }}"
+        success_msg: "Package installation script found for {{ ansible_os_family }}"
 
   post_tasks:
     - name: Generate test report
