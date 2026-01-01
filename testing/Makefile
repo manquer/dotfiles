@@ -77,14 +77,10 @@ test-arch: up ## Run test on Arch Linux
 
 test-linux: test-arch ## Alias for test-arch
 
-test-macos: ## Run test on macOS (requires Tart VM running)
-	@echo "Testing on macOS..."
-	@if ! command -v tart &> /dev/null; then \
-		echo "Error: Tart not installed. Install with: brew install cirruslabs/cli/tart"; \
-		exit 1; \
-	fi
-	@echo "Ensure macOS VM is running (see testing/macos/README.md)"
-	$(DOCKER_COMPOSE) run --rm $(ANSIBLE_CONTAINER) ansible-playbook $(PLAYBOOK) -i $(INVENTORY) -l target-macos
+test-macos-vm: ## Start Tart VM and run tests (automated)
+	@./test-macos-vm.sh
+
+test-macos: test-macos-vm ## Alias for test-macos-vm
 
 # Full test workflow
 full-test: build up run verify ## Build, start containers, run tests, and show results

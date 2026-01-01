@@ -126,23 +126,47 @@ limactl delete dotfiles-test
 
 ## Testing Workflow
 
-Once your macOS VM is running and accessible via SSH:
+### Automated (Recommended)
 
-1. **Verify connectivity**:
+Use the automated test script that handles VM startup and testing:
+
+```bash
+cd testing
+make test-macos
+```
+
+This runs `test-macos-vm.sh` which:
+- Checks if Tart is installed
+- Starts the VM if not running
+- Gets the VM IP address
+- Tests SSH connectivity
+- Runs Ansible dotfiles tests
+
+Environment variables you can set:
+```bash
+export TART_VM_NAME="dotfiles-test-macos"  # Default VM name
+export TART_VM_USER="admin"                # Default VM user
+export TART_BOOT_WAIT="15"                 # Seconds to wait for boot
+```
+
+### Manual Steps
+
+If you need more control:
+
+1. **Start VM**:
+   ```bash
+   tart run --no-graphics dotfiles-test-macos &
+   ```
+
+2. **Get VM IP**:
+   ```bash
+   tart ip dotfiles-test-macos
+   ```
+
+3. **Run tests**:
    ```bash
    cd testing
-   make check
-   ```
-
-2. **Run dry-run test**:
-   ```bash
-   make test-macos
-   ```
-
-3. **Apply dotfiles**:
-   ```bash
-   docker-compose run --rm ansible-control ansible-playbook \
-     playbooks/test-dotfiles.yml -i inventories/hosts.yml -l target-macos
+   ./test-macos-vm.sh
    ```
 
 4. **Verify results**:
