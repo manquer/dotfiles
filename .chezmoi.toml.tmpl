@@ -15,7 +15,6 @@
 {{- if $isDarwin -}}
 {{-   $hasGui = true -}}
 {{- else if $isLinux -}}
-{{-   /* Check for X11 or Wayland */}}
 {{-   $hasGui = or (env "DISPLAY") (env "WAYLAND_DISPLAY") -}}
 {{- end -}}
 
