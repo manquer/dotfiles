@@ -1,0 +1,125 @@
+---
+- name: Test Dotfiles Deployment
+  hosts: docker_test
+  become: yes
+  gather_facts: yes
+
+  vars_files:
+    - ../vars/test-config.yml
+
+  pre_tasks:
+    - name: Display target information
+      ansible.builtin.debug:
+        msg: |
+          Testing on: {{ inventory_hostname }}
+          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          Architecture: {{ ansible_architecture }}
+
+    - name: Update package cache (Debian/Ubuntu)
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update package cache (Arch)
+      community.general.pacman:
+        update_cache: yes
+      when: ansible_os_family == "Archlinux"
+
+  tasks:
+    - name: Install prerequisites
+      block:
+        - name: Install base packages (Debian/Ubuntu)
+          ansible.builtin.apt:
+            name:
+              - curl
+              - git
+              - wget
+              - build-essential
+              - python3-pip
+            state: present
+          when: ansible_os_family == "Debian"
+
+        - name: Install base packages (Arch)
+          community.general.pacman:
+            name:
+              - curl
+              - git
+              - wget
+              - base-devel
+              - python-pip
+            state: present
+          when: ansible_os_family == "Archlinux"
+
+    - name: Install chezmoi
+      ansible.builtin.shell: |
+        sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
+      args:
+        creates: /usr/local/bin/chezmoi
+      become: yes
+
+    - name: Verify chezmoi installation
+      ansible.builtin.command: chezmoi --version
+      register: chezmoi_version
+      changed_when: false
+
+    - name: Display chezmoi version
+      ansible.builtin.debug:
+        var: chezmoi_version.stdout
+
+    - name: Initialize chezmoi with test configuration
+      ansible.builtin.shell: |
+        chezmoi init --source /dotfiles
+      args:
+        creates: /home/testuser/.local/share/chezmoi
+      become: yes
+      become_user: testuser
+      environment:
+        HOME: /home/testuser
+
+    - name: Test chezmoi in dry-run mode
+      ansible.builtin.command: chezmoi apply --dry-run --verbose
+      register: chezmoi_dryrun
+      changed_when: false
+      become: yes
+      become_user: testuser
+      environment:
+        HOME: /home/testuser
+      failed_when: false
+
+    - name: Display dry-run results
+      ansible.builtin.debug:
+        var: chezmoi_dryrun.stdout_lines
+
+    - name: Check for Linux package installation script
+      ansible.builtin.stat:
+        path: /home/testuser/.local/share/chezmoi/run_onchange_before_install-packages-linux.sh.tmpl
+      register: linux_install_script
+      become: yes
+      become_user: testuser
+
+    - name: Verify package installation script exists
+      ansible.builtin.assert:
+        that:
+          - linux_install_script.stat.exists
+        fail_msg: "Linux package installation script not found"
+        success_msg: "Linux package installation script found"
+
+  post_tasks:
+    - name: Generate test report
+      ansible.builtin.template:
+        src: ../templates/test-report.j2
+        dest: /tmp/dotfiles-test-report-{{ inventory_hostname }}.txt
+        mode: '0644'
+      delegate_to: localhost
+
+    - name: Display test summary
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          Test Summary for {{ inventory_hostname }}
+          ========================================
+          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          Chezmoi Version: {{ chezmoi_version.stdout }}
+          Test Status: {{ 'PASSED' if chezmoi_dryrun.rc == 0 else 'FAILED' }}
+          ========================================

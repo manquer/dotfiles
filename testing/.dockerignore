@@ -1,0 +1,8 @@
+logs/
+*.log
+.git
+.github
+.DS_Store
+*.swp
+*.swo
+*~
