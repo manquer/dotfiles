@@ -1,6 +1,5 @@
 # Logs
-logs/*.log
-logs/ansible_facts/
+logs/
 
 # Test reports
 *.txt
