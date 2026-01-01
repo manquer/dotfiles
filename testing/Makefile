@@ -17,10 +17,10 @@ help: ## Show this help message
 build: ## Build the Ansible control container
 	$(DOCKER_COMPOSE) build $(ANSIBLE_CONTAINER)
 
-up: ## Start all test target containers
-	$(DOCKER_COMPOSE) up -d target-ubuntu target-debian target-arch
-	@echo "Waiting for containers to be ready..."
-	@sleep 10
+up: ## Start Arch Linux test container
+	$(DOCKER_COMPOSE) up -d target-arch
+	@echo "Waiting for container to be ready..."
+	@sleep 5
 
 down: ## Stop and remove all containers
 	$(DOCKER_COMPOSE) down
@@ -72,14 +72,19 @@ version: ## Show Ansible version
 	$(DOCKER_COMPOSE) run --rm $(ANSIBLE_CONTAINER) ansible --version
 
 # Target-specific commands
-test-ubuntu: up ## Run test on Ubuntu only
-	$(DOCKER_COMPOSE) run --rm $(ANSIBLE_CONTAINER) ansible-playbook $(PLAYBOOK) -i $(INVENTORY) -l target-ubuntu
-
-test-debian: up ## Run test on Debian only
-	$(DOCKER_COMPOSE) run --rm $(ANSIBLE_CONTAINER) ansible-playbook $(PLAYBOOK) -i $(INVENTORY) -l target-debian
-
-test-arch: up ## Run test on Arch only
+test-arch: up ## Run test on Arch Linux
 	$(DOCKER_COMPOSE) run --rm $(ANSIBLE_CONTAINER) ansible-playbook $(PLAYBOOK) -i $(INVENTORY) -l target-arch
+
+test-linux: test-arch ## Alias for test-arch
+
+test-macos: ## Run test on macOS (requires Tart VM running)
+	@echo "Testing on macOS..."
+	@if ! command -v tart &> /dev/null; then \
+		echo "Error: Tart not installed. Install with: brew install cirruslabs/cli/tart"; \
+		exit 1; \
+	fi
+	@echo "Ensure macOS VM is running (see testing/macos/README.md)"
+	$(DOCKER_COMPOSE) run --rm $(ANSIBLE_CONTAINER) ansible-playbook $(PLAYBOOK) -i $(INVENTORY) -l target-macos
 
 # Full test workflow
 full-test: build up run verify ## Build, start containers, run tests, and show results

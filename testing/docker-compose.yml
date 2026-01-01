@@ -17,65 +17,7 @@ services:
     networks:
       - dotfiles-test
     depends_on:
-      - target-ubuntu
-      - target-debian
       - target-arch
-
-  # Ubuntu 22.04 LTS test target
-  target-ubuntu:
-    image: ubuntu:22.04
-    container_name: dotfiles-target-ubuntu
-    hostname: ubuntu-test
-    networks:
-      dotfiles-test:
-        ipv4_address: 172.29.0.10
-    command: >
-      bash -c "
-        apt-get update &&
-        apt-get install -y openssh-server sudo python3 curl git &&
-        useradd -m -s /bin/bash -G sudo testuser &&
-        echo 'testuser:testpass' | chpasswd &&
-        echo 'testuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
-        mkdir -p /home/testuser/.ssh &&
-        chmod 700 /home/testuser/.ssh &&
-        echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC+testkey+' > /home/testuser/.ssh/authorized_keys &&
-        chmod 600 /home/testuser/.ssh/authorized_keys &&
-        chown -R testuser:testuser /home/testuser/.ssh &&
-        mkdir -p /run/sshd &&
-        /usr/sbin/sshd -D
-      "
-    expose:
-      - "22"
-    ports:
-      - "2222:22"
-
-  # Debian 12 (Bookworm) test target
-  target-debian:
-    image: debian:12
-    container_name: dotfiles-target-debian
-    hostname: debian-test
-    networks:
-      dotfiles-test:
-        ipv4_address: 172.29.0.11
-    command: >
-      bash -c "
-        apt-get update &&
-        apt-get install -y openssh-server sudo python3 curl git &&
-        useradd -m -s /bin/bash -G sudo testuser &&
-        echo 'testuser:testpass' | chpasswd &&
-        echo 'testuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
-        mkdir -p /home/testuser/.ssh &&
-        chmod 700 /home/testuser/.ssh &&
-        echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC+testkey+' > /home/testuser/.ssh/authorized_keys &&
-        chmod 600 /home/testuser/.ssh/authorized_keys &&
-        chown -R testuser:testuser /home/testuser/.ssh &&
-        mkdir -p /run/sshd &&
-        /usr/sbin/sshd -D
-      "
-    expose:
-      - "22"
-    ports:
-      - "2223:22"
 
   # Arch Linux test target
   target-arch:
@@ -84,10 +26,10 @@ services:
     hostname: arch-test
     networks:
       dotfiles-test:
-        ipv4_address: 172.29.0.12
+        ipv4_address: 172.29.0.10
     command: >
       bash -c "
-        pacman -Sy --noconfirm openssh sudo python curl git &&
+        pacman -Sy --noconfirm openssh sudo python curl git base-devel &&
         useradd -m -s /bin/bash -G wheel testuser &&
         echo 'testuser:testpass' | chpasswd &&
         echo '%wheel ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
@@ -102,7 +44,7 @@ services:
     expose:
       - "22"
     ports:
-      - "2224:22"
+      - "2222:22"
 
 networks:
   dotfiles-test:

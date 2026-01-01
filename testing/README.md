@@ -1,10 +1,12 @@
 # Dotfiles Testing
 
-Docker-based integration testing for dotfiles using Ansible.
+Automated testing for dotfiles using Docker (Linux) and VM (macOS) with Ansible.
 
 ## Overview
 
-This testing framework allows you to verify dotfiles deployment across multiple Linux distributions using Docker containers and Ansible playbooks.
+This testing framework allows you to verify dotfiles deployment on:
+- **Linux**: Arch Linux using Docker containers
+- **macOS**: Sonoma/Ventura using Tart or Lima VMs (see `macos/README.md`)
 
 ## Architecture
 
@@ -12,16 +14,18 @@ This testing framework allows you to verify dotfiles deployment across multiple 
 testing/
 ├── Makefile                    # Testing automation
 ├── Dockerfile                  # Ansible control node
-├── docker-compose.yml          # Multi-distro test environment
+├── docker-compose.yml          # Arch Linux test environment
 ├── ansible.cfg                 # Ansible configuration
 ├── playbooks/
 │   └── test-dotfiles.yml      # Main test playbook
 ├── inventories/
-│   └── hosts.yml              # Test target inventory
+│   └── hosts.yml              # Test target inventory (Linux + macOS)
 ├── vars/
 │   └── test-config.yml        # Test variables
 ├── templates/
 │   └── test-report.j2         # Test report template
+├── macos/
+│   └── README.md              # macOS VM testing setup
 └── logs/                       # Test logs and artifacts
 ```
 
@@ -60,11 +64,19 @@ make test-docker-down
 
 ## Test Targets
 
+### Linux (Docker)
+
 | Target | OS | IP | Port |
 |--------|----|----|------|
-| target-ubuntu | Ubuntu 22.04 | 172.29.0.10 | 2222 |
-| target-debian | Debian 12 | 172.29.0.11 | 2223 |
-| target-arch | Arch Linux | 172.29.0.12 | 2224 |
+| target-arch | Arch Linux | 172.29.0.10 | 2222 |
+
+### macOS (VM)
+
+macOS testing requires a separate VM setup using Tart or Lima. See `macos/README.md` for detailed instructions.
+
+| Target | OS | Setup Required |
+|--------|----|----|
+| target-macos | macOS Sonoma | Tart/Lima VM + SSH |
 
 ## Available Commands
 
@@ -84,9 +96,9 @@ make test-docker-verify    # View test reports
 
 ```bash
 make help              # Show all commands
-make full-test         # Complete workflow
+make full-test         # Complete workflow (Arch Linux)
 make build             # Build Ansible container
-make up                # Start test targets
+make up                # Start Arch Linux container
 make down              # Stop containers
 make clean             # Remove containers and volumes
 make test              # Dry-run test
@@ -99,9 +111,9 @@ make lint              # Lint playbooks
 make syntax            # Check syntax
 make facts             # Gather system facts
 make version           # Show Ansible version
-make test-ubuntu       # Test Ubuntu only
-make test-debian       # Test Debian only
-make test-arch         # Test Arch only
+make test-arch         # Test Arch Linux
+make test-linux        # Alias for test-arch
+make test-macos        # Test macOS (requires VM setup)
 ```
 
 ## What Gets Tested
@@ -120,12 +132,12 @@ make test-arch         # Test Arch only
    - Dry-run execution
 
 4. **OS Compatibility**
-   - Ubuntu 22.04
-   - Debian 12
-   - Arch Linux
+   - Linux: Arch Linux (pacman)
+   - macOS: Sonoma/Ventura (Homebrew)
 
 5. **Script Verification**
-   - Linux package installation scripts
+   - Linux package installation scripts (Arch)
+   - macOS package installation scripts (Homebrew)
    - Run-once scripts
    - Run-onchange scripts
 
@@ -136,12 +148,12 @@ Reports are generated in `/tmp/dotfiles-test-report-<target>.txt`:
 ```
 Dotfiles Testing Report
 ======================
-Host: target-ubuntu
-Date: 2025-01-31T15:30:00Z
+Host: target-arch
+Date: 2025-12-31T15:30:00Z
 
 System Information
 ------------------
-OS: Ubuntu 22.04
+OS: Arch Linux
 Architecture: x86_64
 
 Test Results
@@ -173,16 +185,16 @@ make commit
 make push
 ```
 
-### Test Specific Distribution
+### Test Specific OS
 
 ```bash
 cd testing
 
-# Test only on Ubuntu
-make test-ubuntu
-
-# Test only on Arch
+# Test on Arch Linux
 make test-arch
+
+# Test on macOS (requires VM setup)
+make test-macos
 ```
 
 ### Debug Issues
@@ -275,9 +287,12 @@ make test-docker-build
 # Check container networking
 docker network inspect testing_dotfiles-test
 
-# Test manual connection
+# Test manual connection to Arch container
 ssh -p 2222 testuser@172.29.0.10
 # Password: testpass
+
+# Test macOS VM connection (if using Tart)
+ssh admin@$(tart ip dotfiles-test-macos)
 ```
 
 ### Ansible Playbook Errors
@@ -362,17 +377,29 @@ test-dotfiles:
 
 ## Performance
 
-- **Build time**: ~2-3 minutes (first time)
-- **Test runtime**: ~1-2 minutes per target
-- **Full test suite**: ~5-7 minutes
+### Linux (Docker)
+- **Build time**: ~1-2 minutes (first time)
+- **Test runtime**: ~1 minute (Arch Linux)
+- **Full test suite**: ~2-3 minutes
+
+### macOS (VM)
+- **VM setup**: ~5-10 minutes (first time)
+- **Test runtime**: ~2-3 minutes
+- **Note**: VM-based testing is slower than containers
 
 ## Requirements
 
+### Linux Testing (Docker)
 - Docker
 - Docker Compose
 - Make
-- 2GB+ RAM
-- 5GB+ disk space
+- 1GB+ RAM
+- 3GB+ disk space
+
+### macOS Testing (VM)
+- Tart or Lima (VM solution)
+- 4GB+ RAM for VM
+- 10GB+ disk space for VM image
 
 ## Support
 
