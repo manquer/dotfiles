@@ -24,7 +24,7 @@ if ! command -v tart &> /dev/null; then
 fi
 
 # Check if VM exists
-if ! tart list | grep -q "^$VM_NAME"; then
+if ! tart list | grep -q "$VM_NAME"; then
     echo -e "${RED}Error: VM '$VM_NAME' not found.${NC}"
     echo "Available VMs:"
     tart list
@@ -54,21 +54,15 @@ fi
 
 echo -e "${GREEN}VM IP: $VM_IP${NC}"
 
-# Test SSH connection
+# Test SSH connection (skip if using Ansible with its own keys)
 echo "Testing SSH connection..."
-if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no "$VM_USER@$VM_IP" "echo 'SSH connection successful'" 2>/dev/null; then
-    echo -e "${GREEN}SSH connection successful${NC}"
-else
-    echo -e "${RED}Error: Cannot connect to VM via SSH${NC}"
-    echo "Make sure Remote Login is enabled in System Settings > General > Sharing"
-    exit 1
-fi
+echo -e "${YELLOW}Note: SSH authentication is handled by Ansible${NC}"
 
 # Run Ansible tests
 echo -e "${YELLOW}Running Ansible dotfiles tests...${NC}"
 cd "$SCRIPT_DIR"
 
-docker-compose run --rm dotfiles-ansible-control \
+docker-compose run --rm ansible-control \
   ansible-playbook playbooks/test-dotfiles.yml \
   -i inventories/hosts.yml \
   -l target-macos \

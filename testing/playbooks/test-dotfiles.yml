@@ -100,7 +100,7 @@
 
     - name: Initialize chezmoi with test configuration
       ansible.builtin.shell: |
-        /usr/local/bin/chezmoi init --source /tmp/dotfiles-test
+        /usr/local/bin/chezmoi init --source /tmp/dotfiles-test --promptDefaults
       args:
         creates: "{{ test_home }}/.local/share/chezmoi"
       become: "{{ ansible_os_family != 'Darwin' }}"
