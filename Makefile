@@ -1,4 +1,4 @@
-.PHONY: help init apply diff update status check install test clean backup restore
+.PHONY: help init apply diff update status check install test clean backup restore test-docker
 
 # Default target
 .DEFAULT_GOAL := help
@@ -7,6 +7,7 @@
 CHEZMOI := chezmoi
 SOURCE_DIR := $(HOME)/.local/share/chezmoi
 CONFIG_DIR := $(HOME)/.config/chezmoi
+TESTING_DIR := $(SOURCE_DIR)/testing
 
 help: ## Show this help message
 	@echo "Dotfiles Management - Makefile Commands"
@@ -162,3 +163,26 @@ version: ## Show chezmoi and tool versions
 		echo "\nHomebrew version:"; \
 		brew --version; \
 	fi
+
+# Testing commands
+test-docker: ## Run Docker-based integration tests
+	@echo "Running Docker-based tests..."
+	@cd $(TESTING_DIR) && $(MAKE) full-test
+
+test-docker-build: ## Build Docker test environment
+	@cd $(TESTING_DIR) && $(MAKE) build
+
+test-docker-up: ## Start Docker test containers
+	@cd $(TESTING_DIR) && $(MAKE) up
+
+test-docker-down: ## Stop Docker test containers
+	@cd $(TESTING_DIR) && $(MAKE) down
+
+test-docker-clean: ## Clean Docker test environment
+	@cd $(TESTING_DIR) && $(MAKE) clean
+
+test-docker-shell: ## Open shell in test environment
+	@cd $(TESTING_DIR) && $(MAKE) shell
+
+test-docker-verify: ## Verify test results
+	@cd $(TESTING_DIR) && $(MAKE) verify

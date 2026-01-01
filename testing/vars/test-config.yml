@@ -1,0 +1,22 @@
+---
+# Test configuration variables
+test_machine_type: personal
+test_git_name: "Test User"
+test_git_email: "test@example.com"
+test_git_signingkey: ""
+
+# Dotfiles repository (mounted in container)
+dotfiles_source: /dotfiles
+
+# Test environment settings
+test_shell: /bin/bash
+test_home: /home/testuser
+
+# Package installation flags
+skip_gui_apps: true
+skip_mas: true
+
+# Test validation settings
+validate_shell_config: true
+validate_git_config: true
+validate_package_scripts: true

@@ -1,0 +1,12 @@
+# Logs
+logs/*.log
+logs/ansible_facts/
+
+# Test reports
+*.txt
+
+# Docker
+.env
+
+# Ansible
+*.retry
