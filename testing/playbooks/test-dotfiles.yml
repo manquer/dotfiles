@@ -98,20 +98,38 @@
       become: yes
       when: dotfiles_git_repo is defined and dotfiles_git_repo != ""
 
-    - name: Initialize chezmoi with test configuration
+    - name: Create chezmoi config directory
+      ansible.builtin.file:
+        path: "{{ test_home }}/.config/chezmoi"
+        state: directory
+        mode: '0755'
+      become: "{{ ansible_os_family != 'Darwin' }}"
+      become_user: "{{ test_user if ansible_os_family != 'Darwin' else omit }}"
+
+    - name: Generate chezmoi config using execute-template
       ansible.builtin.shell: |
-        /usr/local/bin/chezmoi init --source /tmp/dotfiles-test \
+        /usr/local/bin/chezmoi execute-template --init \
           --promptString machine.type=personal \
           --promptString git.name="Test User" \
           --promptString git.email="test@example.com" \
           --promptString git.signingkey="" \
-          --promptDefaults
-      args:
-        creates: "{{ test_home }}/.local/share/chezmoi"
+          < /tmp/dotfiles-test/.chezmoi.toml.tmpl \
+          > "{{ test_home }}/.config/chezmoi/chezmoi.toml"
       become: "{{ ansible_os_family != 'Darwin' }}"
       become_user: "{{ test_user if ansible_os_family != 'Darwin' else omit }}"
       environment:
         HOME: "{{ test_home }}"
+      register: chezmoi_config_result
+      changed_when: chezmoi_config_result.rc == 0
+
+    - name: Copy dotfiles to chezmoi source directory
+      ansible.builtin.copy:
+        src: /tmp/dotfiles-test/
+        dest: "{{ test_home }}/.local/share/chezmoi/"
+        remote_src: yes
+        mode: preserve
+      become: "{{ ansible_os_family != 'Darwin' }}"
+      become_user: "{{ test_user if ansible_os_family != 'Darwin' else omit }}"
 
     - name: Test chezmoi in dry-run mode
       ansible.builtin.command: /usr/local/bin/chezmoi apply --dry-run --verbose

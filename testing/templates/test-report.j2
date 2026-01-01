@@ -33,14 +33,14 @@ Errors:
 
 Package Scripts
 ---------------
-Linux Script: {{ 'Found' if linux_install_script.stat.exists else 'Not found' }}
+Package Script: {{ 'Found' if package_install_script.stat.exists else 'Not found' }}
 
 Verification
 ------------
 ✓ Chezmoi installed successfully
 ✓ Dotfiles repository accessible
 {{ '✓' if chezmoi_dryrun.rc == 0 else '✗' }} Dry-run completed
-{{ '✓' if linux_install_script.stat.exists else '✗' }} Package scripts present
+{{ '✓' if package_install_script.stat.exists else '✗' }} Package scripts present
 
 Next Steps
 ----------
