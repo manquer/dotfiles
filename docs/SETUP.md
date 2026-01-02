@@ -1,10 +1,21 @@
 # Setup Guide
 
+Complete installation and configuration guide for this dotfiles setup.
+
 ## Prerequisites
 
 - Git
 - curl
 - sudo access
+- macOS or Linux (Arch, Ubuntu, Fedora, Debian)
+
+## Related Documentation
+
+Before starting, you may want to review:
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) - How the system works
+- [PROFILES.md](PROFILES.md) - Work vs personal profiles
+- [PACKAGES.md](PACKAGES.md) - What gets installed
 
 ## Fresh Install
 
@@ -50,7 +61,7 @@ make install
 
 This will:
 - Install Homebrew (if not present)
-- Install 107+ packages and tools
+- Install 108+ packages and tools
 - Install npm global packages
 - Set up Oh My Zsh + Powerlevel10k
 - Generate SSH keys
@@ -254,7 +265,7 @@ Override in `~/.config/chezmoi/chezmoi.toml`:
 ## Package Installation
 
 The setup installs:
-- **macOS**: 107+ Homebrew formulas + casks
+- **macOS**: 108+ Homebrew formulas + casks
 - **Linux**: Core development tools via pacman/apt/dnf
 - **npm**: 16+ global packages
 - **Fonts**: 3 Nerd Fonts
@@ -301,3 +312,18 @@ Packages only install when:
    ```bash
    make help  # See all available commands
    ```
+
+## Further Reading
+
+After setup, explore these docs:
+
+| Document | Description |
+|----------|-------------|
+| [SHELL.md](SHELL.md) | Shell configuration and aliases |
+| [GIT.md](GIT.md) | Git settings and GPG signing |
+| [NEOVIM.md](NEOVIM.md) | Editor configuration |
+| [TOOLS.md](TOOLS.md) | Tool configurations |
+| [TEMPLATES.md](TEMPLATES.md) | Chezmoi templating |
+| [SCRIPTS.md](SCRIPTS.md) | Setup scripts |
+| [MAKEFILE.md](MAKEFILE.md) | All Makefile commands |
+| [../testing/README.md](../testing/README.md) | Testing infrastructure |
