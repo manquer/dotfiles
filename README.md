@@ -23,7 +23,7 @@ Cross-platform development environment managed with [chezmoi](https://www.chezmo
             ▼                      ▼                      ▼
     ┌───────────────┐    ┌─────────────────┐    ┌─────────────────┐
     │ run_once_*    │    │ run_onchange_*  │    │  Config Files   │
-    │ ────────────  │    │ ─────────────── │    │ ────────────── │
+    │ ────────────  │    │ ─────────────── │    │ ─────────────── │
     │ • Directories │    │ • Packages      │    │ • Shell (zsh)   │
     │ • Oh My Zsh   │    │   (brew/pacman) │    │ • Git           │
     │ • SSH keys    │    │ • npm globals   │    │ • Neovim        │
