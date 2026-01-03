@@ -26,20 +26,36 @@ return function()
 
   -- clipboard
   vim.opt.clipboard = "unnamedplus"
-  
-  -- Set pbcopy/pbpaste as clipboard provider for macOS
-  vim.g.clipboard = {
-    name = 'pbcopy',
-    copy = {
-      ['+'] = 'pbcopy',
-      ['*'] = 'pbcopy',
-    },
-    paste = {
-      ['+'] = 'pbpaste',
-      ['*'] = 'pbpaste',
-    },
-    cache_enabled = 0,
-  }
+
+  -- Set clipboard provider based on OS
+  if vim.fn.has('mac') == 1 then
+    vim.g.clipboard = {
+      name = 'pbcopy',
+      copy = {
+        ['+'] = 'pbcopy',
+        ['*'] = 'pbcopy',
+      },
+      paste = {
+        ['+'] = 'pbpaste',
+        ['*'] = 'pbpaste',
+      },
+      cache_enabled = 0,
+    }
+  elseif vim.fn.has('unix') == 1 then
+    -- Use xclip for Linux (xsel is an alternative)
+    vim.g.clipboard = {
+      name = 'xclip',
+      copy = {
+        ['+'] = 'xclip -selection clipboard',
+        ['*'] = 'xclip -selection primary',
+      },
+      paste = {
+        ['+'] = 'xclip -selection clipboard -o',
+        ['*'] = 'xclip -selection primary -o',
+      },
+      cache_enabled = 0,
+    }
+  end
 
   -- plugin globals
   vim.g.gitblame_enabled = 1
