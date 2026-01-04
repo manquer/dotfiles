@@ -1,7 +1,20 @@
 {{- /* Detect OS */}}
 {{- $isDarwin := eq .chezmoi.os "darwin" -}}
 {{- $isLinux := eq .chezmoi.os "linux" -}}
-{{- $isArch := and $isLinux (stat "/etc/arch-release") -}}
+{{- $isArch := false -}}
+{{- $isDebian := false -}}
+{{- $isUbuntu := false -}}
+{{- if $isLinux -}}
+{{-   if stat "/etc/arch-release" -}}
+{{-     $isArch = true -}}
+{{-   end -}}
+{{-   if stat "/etc/debian_version" -}}
+{{-     $isDebian = true -}}
+{{-   end -}}
+{{-   if and $isDebian (stat "/etc/lsb-release") -}}
+{{-     $isUbuntu = true -}}
+{{-   end -}}
+{{- end -}}
 
 {{- /* Detect machine type */}}
 {{- $machineType := "personal" -}}
@@ -37,6 +50,8 @@
         isLinux = {{ $isLinux }}
         isDarwin = {{ $isDarwin }}
         isArch = {{ $isArch }}
+        isDebian = {{ $isDebian }}
+        isUbuntu = {{ $isUbuntu }}
         isWork = {{ eq $machineType "work" }}
         isPersonal = {{ eq $machineType "personal" }}
         hasGui = {{ $hasGui }}
