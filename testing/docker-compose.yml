@@ -46,6 +46,78 @@ services:
     ports:
       - "2222:22"
 
+  # Ubuntu 24.04 test target
+  target-ubuntu-24:
+    build:
+      context: ..
+      dockerfile: testing/Dockerfile.ubuntu
+      args:
+        UBUNTU_VERSION: "24.04"
+    image: dotfiles-test:ubuntu-24.04
+    container_name: dotfiles-target-ubuntu-24
+    hostname: ubuntu-24-test
+    volumes:
+      - ..:/home/testuser/.local/share/chezmoi:ro
+    networks:
+      dotfiles-test:
+        ipv4_address: 172.29.0.11
+    stdin_open: true
+    tty: true
+
+  # Ubuntu 22.04 test target
+  target-ubuntu-22:
+    build:
+      context: ..
+      dockerfile: testing/Dockerfile.ubuntu
+      args:
+        UBUNTU_VERSION: "22.04"
+    image: dotfiles-test:ubuntu-22.04
+    container_name: dotfiles-target-ubuntu-22
+    hostname: ubuntu-22-test
+    volumes:
+      - ..:/home/testuser/.local/share/chezmoi:ro
+    networks:
+      dotfiles-test:
+        ipv4_address: 172.29.0.12
+    stdin_open: true
+    tty: true
+
+  # Debian 12 test target
+  target-debian-12:
+    build:
+      context: ..
+      dockerfile: testing/Dockerfile.debian
+      args:
+        DEBIAN_VERSION: "12"
+    image: dotfiles-test:debian-12
+    container_name: dotfiles-target-debian-12
+    hostname: debian-12-test
+    volumes:
+      - ..:/home/testuser/.local/share/chezmoi:ro
+    networks:
+      dotfiles-test:
+        ipv4_address: 172.29.0.13
+    stdin_open: true
+    tty: true
+
+  # Debian 11 test target
+  target-debian-11:
+    build:
+      context: ..
+      dockerfile: testing/Dockerfile.debian
+      args:
+        DEBIAN_VERSION: "11"
+    image: dotfiles-test:debian-11
+    container_name: dotfiles-target-debian-11
+    hostname: debian-11-test
+    volumes:
+      - ..:/home/testuser/.local/share/chezmoi:ro
+    networks:
+      dotfiles-test:
+        ipv4_address: 172.29.0.14
+    stdin_open: true
+    tty: true
+
 networks:
   dotfiles-test:
     driver: bridge
