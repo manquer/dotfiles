@@ -11,11 +11,9 @@ if ! command -v brew &> /dev/null; then
 fi
 
 # Run brew bundle with inline Brewfile
-brew bundle --no-lock --file=/dev/stdin <<EOF
+brew bundle --file=/dev/stdin <<EOF
 
 # Taps
-tap "homebrew/bundle"
-tap "homebrew/cask-fonts"
 tap "withgraphite/tap"
 
 # CLI Tools - Version Control
@@ -65,7 +63,7 @@ brew "tldr"            # Simplified man pages
 brew "direnv"          # Directory-specific environment variables
 brew "zoxide"          # Smarter cd command
 brew "watchman"        # File watching service
-brew "ctags"           # Universal ctags for code navigation
+brew "universal-ctags" # Universal ctags for code navigation
 brew "the_silver_searcher" # Fast code search tool
 brew "graphviz"        # Graph visualization software
 
@@ -110,7 +108,6 @@ brew "slides"          # Terminal-based presentation tool
 brew "presenterm"      # Terminal-based presentation tool
 brew "mosh"            # Mobile shell
 brew "parallel"        # Execute jobs in parallel
-brew "moreutils"       # Unix utilities (sponge, vidir, ts)
 brew "shellcheck"      # Shell script linter
 brew "bats-core"       # Bash Automated Testing System
 brew "vale"            # Prose linter
@@ -148,7 +145,6 @@ cask "firefox"
 # GUI Applications - Communication
 cask "slack"
 cask "discord"
-cask "zoom"
 
 # GUI Applications - Productivity
 cask "notion"
