@@ -29,32 +29,32 @@ fi
 #     unset __conda_setup
 # fi
 
-# atuin - shell history
-if [[ -d "${HOME}/.atuin/bin" ]]; then
-    . "${HOME}/.atuin/bin/env"
-    eval "$(atuin init zsh)"
-elif command -v atuin &>/dev/null; then
-    eval "$(atuin init zsh)"
-fi
-
 # zoxide - smarter cd
 if command -v zoxide &>/dev/null; then
     eval "$(zoxide init zsh)"
 fi
 
-# fzf - fuzzy finder
-if command -v fzf &>/dev/null; then
-{{ if .machine.isDarwin }}
-    if [[ -f /opt/homebrew/opt/fzf/shell/key-bindings.zsh ]]; then
-        source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
-        source /opt/homebrew/opt/fzf/shell/completion.zsh
-    fi
-{{ else if .machine.isLinux }}
-    if [[ -f /usr/share/fzf/key-bindings.zsh ]]; then
-        source /usr/share/fzf/key-bindings.zsh
-        source /usr/share/fzf/completion.zsh
-    fi
-{{ end }}
+# fzf - fuzzy finder (disabled - using atuin for history search)
+# if command -v fzf &>/dev/null; then
+# {{ if .machine.isDarwin }}
+#     if [[ -f /opt/homebrew/opt/fzf/shell/key-bindings.zsh ]]; then
+#         source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+#         source /opt/homebrew/opt/fzf/shell/completion.zsh
+#     fi
+# {{ else if .machine.isLinux }}
+#     if [[ -f /usr/share/fzf/key-bindings.zsh ]]; then
+#         source /usr/share/fzf/key-bindings.zsh
+#         source /usr/share/fzf/completion.zsh
+#     fi
+# {{ end }}
+# fi
+
+# atuin - shell history (load after fzf to override ctrl+r binding)
+if [[ -d "${HOME}/.atuin/bin" ]]; then
+    . "${HOME}/.atuin/bin/env"
+    eval "$(atuin init zsh)"
+elif command -v atuin &>/dev/null; then
+    eval "$(atuin init zsh)"
 fi
 
 # direnv - directory-specific environment
