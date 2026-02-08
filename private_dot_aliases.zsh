@@ -57,11 +57,6 @@ alias gadd='git add'
 alias gcom='git commit'
 alias gbr='git branch'
 
-# Quick directory navigation with zoxide
-if command -v zoxide &> /dev/null; then
-    alias cd='z'
-fi
-
 # Docker aliases
 alias dps='docker ps'
 alias dpsa='docker ps -a'
