@@ -29,7 +29,7 @@
 
       // Diagnostics navigation (like ALE Ctrl-j/k)
       "ctrl-j": "editor::GoToDiagnostic",
-      "ctrl-k": "editor::GoToPrevDiagnostic",
+      "ctrl-k": "editor::GoToPreviousDiagnostic",
 
       // Window focus (like Ctrl-w h/l but simpler)
       "ctrl-h": "workspace::ActivatePaneLeft",
@@ -55,7 +55,7 @@
     "context": "Editor && VimControl && !VimWaiting && !menu",
     "bindings": {
       // Previous / next buffer
-      "alt-,": "pane::ActivatePrevItem",
+      "alt-,": "pane::ActivatePreviousItem",
       "alt-.": "pane::ActivateNextItem",
 
       // Go to buffer by position
