@@ -1,0 +1,154 @@
+[
+  //
+  // ── NORMAL MODE (mirrors nvim <leader> = , keymaps) ──────────────────
+  //
+  {
+    "context": "Editor && VimControl && !VimWaiting && !menu",
+    "bindings": {
+      // Telescope equivalents
+      ", f f": "file_finder::Toggle",
+      ", f g": "pane::DeploySearch",
+      ", f b": "tab_switcher::Toggle",
+
+      // Close buffer but keep layout (like :bp | bd #)
+      ", q": "pane::CloseActiveItem",
+
+      // Rename symbol (inc-rename equivalent)
+      ", r n": "editor::Rename",
+
+      // Terminal toggles
+      ", t f": "workspace::ToggleBottomDock",
+      ", t v": "workspace::ToggleRightDock",
+      ", t t": "workspace::ToggleBottomDock",
+
+      // NERDTree / project panel toggle
+      ", e": "workspace::ToggleLeftDock",
+
+      // Tagbar / outline toggle
+      "f8": "outline::Toggle",
+
+      // Diagnostics navigation (like ALE Ctrl-j/k)
+      "ctrl-j": "editor::GoToDiagnostic",
+      "ctrl-k": "editor::GoToPrevDiagnostic",
+
+      // Window focus (like Ctrl-w h/l but simpler)
+      "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-l": "workspace::ActivatePaneRight"
+    }
+  },
+
+  //
+  // ── SNEAK MOTIONS (vim-sneak equivalent) ─────────────────────────────
+  //
+  {
+    "context": "Editor && (vim_mode == normal || vim_mode == visual)",
+    "bindings": {
+      "s": "vim::PushSneak",
+      "shift-s": "vim::PushSneakBackward"
+    }
+  },
+
+  //
+  // ── BUFFER/TAB NAVIGATION (barbar equivalents) ───────────────────────
+  //
+  {
+    "context": "Editor && VimControl && !VimWaiting && !menu",
+    "bindings": {
+      // Previous / next buffer
+      "alt-,": "pane::ActivatePrevItem",
+      "alt-.": "pane::ActivateNextItem",
+
+      // Go to buffer by position
+      "alt-1": ["pane::ActivateItem", 0],
+      "alt-2": ["pane::ActivateItem", 1],
+      "alt-3": ["pane::ActivateItem", 2],
+      "alt-4": ["pane::ActivateItem", 3],
+      "alt-5": ["pane::ActivateItem", 4],
+      "alt-6": ["pane::ActivateItem", 5],
+      "alt-7": ["pane::ActivateItem", 6],
+      "alt-8": ["pane::ActivateItem", 7],
+      "alt-9": ["pane::ActivateItem", 8],
+      "alt-0": "pane::ActivateLastItem",
+
+      // Close buffer
+      "alt-c": "pane::CloseActiveItem",
+
+      // Buffer pick (like Ctrl-p BufferPick)
+      "ctrl-p": "tab_switcher::Toggle"
+    }
+  },
+
+  //
+  // ── PROJECT PANEL (NERDTree-style navigation) ────────────────────────
+  //
+  {
+    "context": "ProjectPanel && not_editing",
+    "bindings": {
+      "h": "project_panel::CollapseSelectedEntry",
+      "l": "project_panel::ExpandSelectedEntry",
+      "j": "menu::SelectNext",
+      "k": "menu::SelectPrevious",
+      "o": "project_panel::Open",
+      "enter": "project_panel::Open",
+      "a": "project_panel::NewFile",
+      "shift-a": "project_panel::NewDirectory",
+      "r": "project_panel::Rename",
+      "d": "project_panel::Delete",
+      "x": "project_panel::Cut",
+      "y": "project_panel::Copy",
+      "p": "project_panel::Paste",
+      "escape": "workspace::ToggleLeftDock"
+    }
+  },
+
+  //
+  // ── TERMINAL (toggleterm equivalents) ────────────────────────────────
+  //
+  {
+    "context": "Terminal",
+    "bindings": {
+      // Navigate out of terminal to editor splits (like nvim Ctrl-h/j/k/l in terminal mode)
+      "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-l": "workspace::ActivatePaneRight",
+      "ctrl-k": "workspace::ActivatePaneUp",
+      "ctrl-j": "workspace::ActivatePaneDown",
+
+      // Toggle terminal (like Ctrl-\ toggleterm)
+      "ctrl-\\": "workspace::ToggleBottomDock"
+    }
+  },
+
+  //
+  // ── GLOBAL TERMINAL TOGGLE ───────────────────────────────────────────
+  //
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-\\": "terminal_panel::ToggleFocus"
+    }
+  },
+
+  //
+  // ── DOCK PANELS (pane navigation from docks) ─────────────────────────
+  //
+  {
+    "context": "Dock",
+    "bindings": {
+      "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-l": "workspace::ActivatePaneRight",
+      "ctrl-k": "workspace::ActivatePaneUp",
+      "ctrl-j": "workspace::ActivatePaneDown"
+    }
+  },
+
+  //
+  // ── INSERT MODE ──────────────────────────────────────────────────────
+  //
+  {
+    "context": "Editor && vim_mode == insert",
+    "bindings": {
+      // Quick escape with jk (common vim habit)
+      "j k": "vim::NormalBefore"
+    }
+  }
+]

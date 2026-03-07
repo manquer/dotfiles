@@ -1,0 +1,196 @@
+{
+  "show_wrap_guides": true,
+  "diagnostics": {
+    "inline": {
+      "enabled": false
+    }
+  },
+  "agent": {
+    "default_model": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5-latest"
+    },
+    "default_width": 645.0,
+    "dock": "right",
+    "button": true,
+    "favorite_models": [],
+    "model_parameters": []
+  },
+  "ssh_connections": [
+    {
+      "host": "clients-dev-k8s.devpod",
+      "args": [],
+      "projects": [
+        {
+          "paths": [
+            "/home/node"
+          ]
+        }
+      ]
+    },
+    {
+      "host": "clients-dev.devpod",
+      "args": [],
+      "projects": []
+    }
+  ],
+  "audio": {
+    "experimental.rodio_audio": true
+  },
+  "vim_mode": true,
+  "vim": {
+    "use_system_clipboard": "always",
+    "use_smartcase_find": true
+  },
+  "base_keymap": "VSCode",
+  "ui_font_ze": 16,
+  "buffer_font_size": 16,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "macOS Classic Dark"
+  },
+  "tab_size": 2,
+  "hard_tabs": false,
+  "preferred_line_length": 120,
+  "soft_wrap": "prefer_line",
+  "show_whitespaces": "selection",
+  "remove_trailing_whitespace_on_save": true,
+  "ensure_final_newline_on_save": true,
+
+  "formatter": "prettier",
+  "format_on_save": "on",
+  "prettier": {
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "bracketSpacing": true,
+    "arrowParens": "always"
+  },
+
+  "languages": {
+    "TypeScript": {
+      "tab_size": 2,
+      "hard_tabs": false,
+      "formatter": "prettier",
+      "format_on_save": "on"
+    },
+    "TSX": {
+      "tab_size": 2,
+      "hard_tabs": false,
+      "formatter": "prettier",
+      "format_on_save": "on"
+    },
+    "JavaScript": {
+      "tab_size": 2,
+      "hard_tabs": false,
+      "formatter": "prettier",
+      "format_on_save": "on"
+    },
+    "JSON": {
+      "tab_size": 2,
+      "hard_tabs": false,
+      "formatter": "prettier"
+    }
+  },
+
+  "lsp": {
+    "typescript-language-server": {
+      "initialization_options": {
+        "preferences": {
+          "includeInlayParameterNameHints": "all",
+          "includeInlayParameterNameHintsWhenArgumentMatchesName": true,
+          "includeInlayFunctionParameterTypeHints": true,
+          "includeInlayVariableTypeHints": true,
+          "includeInlayPropertyDeclarationTypeHints": true,
+          "includeInlayFunctionLikeReturnTypeHints": true,
+          "includeInlayEnumMemberValueHints": true
+        }
+      }
+    },
+    "eslint": {
+      "settings": {
+        "codeActionOnSave": {
+          "rules": ["*"]
+        }
+      }
+    }
+  },
+
+  "file_types": {
+    "Dockerfile": ["Dockerfile*"],
+    "JSON": ["*.json", ".eslintrc", ".prettierrc", "tsconfig*.json"]
+  },
+
+  "ui_font_size": 16,
+  "tabs": {
+    "file_icons": true,
+    "git_status": true
+  },
+  "scrollbar": {
+    "show": "auto"
+  },
+
+  "terminal": {
+   "font_family": "MLGS NF",
+   "shell": {
+      "program": "zsh"
+    },
+    "working_directory": "current_project_directory",
+    "font_size": 14
+  },
+
+  "git": {
+    "git_gutter": "tracked_files",
+    "inline_blame": {
+      "enabled": false
+    }
+  },
+
+  "file_scan_exclusions": [
+    "**/.git",
+    "**/.yarn",
+    "**/node_modules",
+    "**/dist",
+    "**/build",
+    "**/.next",
+    "**/coverage",
+    "**/.cache",
+    "**/.nx"
+  ],
+
+  "project_panel": {
+    "dock": "left",
+    "default_width": 300,
+    "file_icons": true,
+    "folder_icons": true,
+    "git_status": true,
+    "indent_size": 20
+  },
+
+  "inlay_hints": {
+    "show_background": true,
+    "show_value_hints": true,
+    "enabled": true,
+    "show_type_hints": true,
+    "show_parameter_hints": true,
+    "show_other_hints": true
+  },
+
+  "show_completion_documentation": true,
+
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false
+  },
+  "disable_ai": true,
+  "autosave": "on_focus_change",
+
+  "code_actions_on_format": {
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true
+  }
+}
