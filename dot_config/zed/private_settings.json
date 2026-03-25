@@ -43,7 +43,6 @@
     "use_smartcase_find": true
   },
   "base_keymap": "VSCode",
-  "ui_font_ze": 16,
   "buffer_font_size": 16,
   "theme": {
     "mode": "system",
@@ -135,7 +134,7 @@
   },
 
   "terminal": {
-   "font_family": "MLGS NF",
+   "font_family": "FiraCode Nerd Font",
    "shell": {
       "program": "zsh"
     },
@@ -159,7 +158,8 @@
     "**/.next",
     "**/coverage",
     "**/.cache",
-    "**/.nx"
+    "**/.nx",
+    "**/*.d.ts"
   ],
 
   "project_panel": {

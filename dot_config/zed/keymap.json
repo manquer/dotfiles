@@ -114,7 +114,11 @@
       "ctrl-j": "workspace::ActivatePaneDown",
 
       // Toggle terminal (like Ctrl-\ toggleterm)
-      "ctrl-\\": "workspace::ToggleBottomDock"
+      "ctrl-\\": "workspace::ToggleBottomDock",
+
+      // Tab navigation
+      "alt-,": "pane::ActivatePreviousItem",
+      "alt-.": "pane::ActivateNextItem"
     }
   },
 
