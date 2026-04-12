@@ -13,6 +13,10 @@
       // Close buffer but keep layout (like :bp | bd #)
       ", q": "pane::CloseActiveItem",
 
+      // Copy file path
+      ", y p": "editor::CopyPath",
+      ", y r": "editor::CopyRelativePath",
+
       // Rename symbol (inc-rename equivalent)
       ", r n": "editor::Rename",
 
