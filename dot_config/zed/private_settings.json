@@ -1,4 +1,5 @@
 {
+  "diff_view_style": "unified",
   "show_wrap_guides": true,
   "diagnostics": {
     "inline": {
