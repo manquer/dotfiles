@@ -56,6 +56,8 @@ alias gdiff='git diff'
 alias gadd='git add'
 alias gcom='git commit'
 alias gbr='git branch'
+alias gcm='git checkout master'
+alias gcd='git checkout develop'
 
 # Docker aliases
 alias dps='docker ps'
