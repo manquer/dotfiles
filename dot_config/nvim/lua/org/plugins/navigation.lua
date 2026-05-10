@@ -6,7 +6,7 @@ local function register(Plug)
   Plug("pechorin/any-jump.vim") -- jump to symbol implementations
   Plug("majutsushi/tagbar") -- outline sidebar for tags
   Plug("junegunn/fzf", { ["do"] = ":call fzf#install()" }) -- fuzzy finder binary install
-  Plug("nvim-telescope/telescope.nvim", { tag = "0.1.8" }) -- picker powered by telescope
+  Plug("nvim-telescope/telescope.nvim", { tag = "v0.1.9" }) -- picker powered by telescope
   Plug("ThePrimeagen/harpoon") -- quick file mark navigation
 end
 

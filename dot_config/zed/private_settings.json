@@ -1,6 +1,15 @@
 {
-  "diff_view_style": "unified",
-  "show_wrap_guides": true,
+  "outline_panel": {
+    "dock": "left"
+  },
+  "collaboration_panel": {
+    "dock": "left"
+  },
+  "git_panel": {
+    "dock": "left"
+  },
+  "diff_view_style": "split",
+  "show_wrap_guides": false,
   "diagnostics": {
     "inline": {
       "enabled": false
@@ -8,8 +17,8 @@
   },
   "agent": {
     "default_model": {
-      "provider": "anthropic",
-      "model": "claude-sonnet-4-5-latest"
+      "provider": "zed.dev",
+      "model": "gemini-3-flash"
     },
     "default_width": 645.0,
     "dock": "right",
@@ -52,7 +61,7 @@
   },
   "tab_size": 2,
   "hard_tabs": false,
-  "preferred_line_length": 120,
+  "preferred_line_length": 141,
   "soft_wrap": "prefer_line",
   "show_whitespaces": "selection",
   "remove_trailing_whitespace_on_save": true,
@@ -187,7 +196,7 @@
     "diagnostics": false,
     "metrics": false
   },
-  "disable_ai": true,
+  "disable_ai": false,
   "autosave": "on_focus_change",
 
   "code_actions_on_format": {

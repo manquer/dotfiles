@@ -35,6 +35,8 @@ function M.setup()
     "org.plugins.config.opencode",
     "org.plugins.config.worktree",
     "org.plugins.config.windows",
+    "org.plugins.config.devcontainer",
+    "org.plugins.config.devpod",
   }) do
     run(module)
   end

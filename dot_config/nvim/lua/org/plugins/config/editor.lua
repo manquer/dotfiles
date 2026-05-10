@@ -31,4 +31,16 @@ return function()
   with("render-markdown", function(plugin)
     plugin.setup({})
   end)
+
+  with("nvim-treesitter.configs", function(plugin)
+    plugin.setup({
+      ensure_installed = { "json" },
+      auto_install = true,
+    })
+  end)
+
+  local ok, install = pcall(require, "nvim-treesitter.install")
+  if ok then
+    install.compilers = { "cc", "gcc", "clang" }
+  end
 end

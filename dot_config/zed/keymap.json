@@ -24,6 +24,7 @@
       ", t f": "workspace::ToggleBottomDock",
       ", t v": "workspace::ToggleRightDock",
       ", t t": "workspace::ToggleBottomDock",
+      ", t c": "workspace::NewTerminal",
 
       // NERDTree / project panel toggle
       ", e": "workspace::ToggleLeftDock",

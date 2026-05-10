@@ -6,6 +6,7 @@ local function register(Plug)
   Plug("andythigpen/nvim-coverage") -- code coverage visualisation
   Plug("olimorris/codecompanion.nvim") -- AI coding assistant
   Plug("NickvanDyke/opencode.nvim") -- opencode AI assistant
+  Plug("esensar/nvim-dev-container") -- devcontainer support
 end
 
 return register

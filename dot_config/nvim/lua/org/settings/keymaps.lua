@@ -16,6 +16,11 @@ return function()
 
   -- terminal navigation
   map("t", "<Esc>", [[<C-\><C-n>]], { silent = true, desc = "Leave terminal mode" })
+
+  -- Always enter insert mode when opening a terminal buffer
+  vim.api.nvim_create_autocmd("TermOpen", {
+    callback = function() vim.cmd("startinsert") end,
+  })
   map("t", "<C-h>", [[<C-\><C-n><C-w>h]], { silent = true, desc = "Terminal focus left split" })
   map("t", "<C-j>", [[<C-\><C-n><C-w>j]], { silent = true, desc = "Terminal focus below split" })
   map("t", "<C-k>", [[<C-\><C-n><C-w>k]], { silent = true, desc = "Terminal focus upper split" })
@@ -78,5 +83,20 @@ return function()
 
  -- claude code
  map("n", "<leader>ccc", "<cmd>ClaudeCode<CR>", { desc = 'Toggle Claude Code' })
+
+  -- devpod
+  map("n", "<leader>dpl", "<cmd>DevpodList<CR>",    { silent = true, desc = "DevPod: list workspaces (picker)" })
+  map("n", "<leader>dpu", "<cmd>DevpodUp<CR>",      { silent = true, desc = "DevPod: start workspace" })
+  map("n", "<leader>dps", "<cmd>DevpodStop<CR>",    { silent = true, desc = "DevPod: stop workspace" })
+  map("n", "<leader>dpc", "<cmd>DevpodConnect<CR>", { silent = true, desc = "DevPod: connect to workspace" })
+  map("n", "<leader>dpx", "<cmd>DevpodDelete<CR>",  { silent = true, desc = "DevPod: delete workspace" })
+  map("n", "<leader>dpi", "<cmd>DevpodStatus<CR>",  { silent = true, desc = "DevPod: workspace status" })
+
+  -- devcontainer
+  map("n", "<leader>dcs", "<cmd>DevcontainerStart<CR>", { silent = true, desc = "Devcontainer start" })
+  map("n", "<leader>dca", "<cmd>DevcontainerAttach<CR>", { silent = true, desc = "Devcontainer attach" })
+  map("n", "<leader>dcx", "<cmd>DevcontainerExec<CR>", { silent = true, desc = "Devcontainer exec" })
+  map("n", "<leader>dcq", "<cmd>DevcontainerStop<CR>", { silent = true, desc = "Devcontainer stop" })
+  map("n", "<leader>dce", "<cmd>DevcontainerEditNearestConfig<CR>", { silent = true, desc = "Devcontainer edit config" })
 
 end
