@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Populate macOS Keychain with secrets required by chezmoi templates.
+# Uses Secure Enclave-backed Keychain on Apple Silicon.
+# Runs once per machine — re-run by deleting the chezmoi state entry.
+{{ if not .machine.isDarwin }}
+exit 0
+{{ end }}
+
+set -euo pipefail
+
+SERVICE="chezmoi"
+
+keychain_set() {
+  local user="$1"
+  local prompt="$2"
+
+  # Skip if already set
+  if security find-generic-password -s "$SERVICE" -a "$user" -w &>/dev/null; then
+    return 0
+  fi
+
+  printf "%s: " "$prompt"
+  local value
+  IFS= read -rs value </dev/tty
+  printf "\n"
+
+  if [[ -n "$value" ]]; then
+    security add-generic-password -s "$SERVICE" -a "$user" -w "$value" -U
+    chezmoi secret keyring set --service="$SERVICE" --user="$user" <<< "$value"
+  else
+    # Store empty string so template doesn't error
+    security add-generic-password -s "$SERVICE" -a "$user" -w "" -U
+    chezmoi secret keyring set --service="$SERVICE" --user="$user" <<< ""
+  fi
+}
+
+echo "==> Setting up secrets in macOS Keychain (service: $SERVICE)"
+echo "    Press Enter to skip any secret you don't have yet."
+echo ""
+
+{{ if .machine.isWork -}}
+keychain_set "GITHUB_TOKEN"                "GitHub Token"
+keychain_set "ANTHROPIC_API_KEY"           "Anthropic API Key"
+keychain_set "LINEAR_API_KEY"              "Linear API Key"
+keychain_set "LITELLM_API_KEY"             "LiteLLM API Key"
+keychain_set "SENTRY_AUTH_TOKEN"           "Sentry Auth Token"
+keychain_set "NORTHFLANK_API_TOKEN"        "Northflank API Token"
+keychain_set "GT_AUTH_TOKEN"               "GT Auth Token"
+keychain_set "RXDB_PREMIUM"                "RxDB Premium Token"
+keychain_set "NGROK_AUTHTOKEN"             "Ngrok Auth Token"
+keychain_set "FONTAWESOME_NPM_AUTH_TOKEN"  "FontAwesome NPM Auth Token"
+{{ else -}}
+keychain_set "GITHUB_TOKEN"  "GitHub Token"
+{{ end -}}
+
+echo ""
+echo "==> Keychain setup complete."

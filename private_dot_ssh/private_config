@@ -1,0 +1,26 @@
+# Managed by chezmoi — edit source at ~/.local/share/chezmoi/private_dot_ssh/private_config
+# Dynamic includes (managed by devbox/colima — not chezmoi)
+Include ~/.namespace/ssh/*.ssh
+Include ~/.colima/ssh_config
+
+ServerAliveInterval 60
+
+Host REDACTED
+  IdentitiesOnly yes
+  User mani
+  SendEnv AWS_PROFILE
+  SendEnv LINEAR_API_KEY
+  SendEnv LITELLM_API_KEY
+  SendEnv ANTHROPIC_API_KEY
+  SendEnv GITHUB_TOKEN
+  SendEnv GT_AUTH_TOKEN
+  SendEnv RXDB_PREMIUM
+  SendEnv NGROK_AUTHTOKEN
+  SendEnv SENTRY_AUTH_TOKEN
+  SendEnv FONTAWESOME_NPM_AUTH_TOKEN
+  IdentityFile ~/.ssh/id_ed25519
+
+Host REDACTED-HOST
+  IdentityFile ~/.ssh/REDACTED-KEY
+  IdentitiesOnly yes
+  User tv

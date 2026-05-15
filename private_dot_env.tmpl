@@ -1,63 +1,35 @@
-# Environment variables
-# This file is sourced by shell configuration files
+{{- /* Read a secret from macOS Keychain, returning empty string if not found */ -}}
+{{- define "ks" -}}{{ output "sh" "-c" (printf "security find-generic-password -s chezmoi -a %s -w 2>/dev/null || true" .) | trim }}{{- end -}}
+# Environment variables — managed by chezmoi
+# Secrets sourced from macOS Keychain (Secure Enclave backed on Apple Silicon)
+# First-time setup: chezmoi apply  (run_once_before_01-setup-keychain.sh.tmpl will prompt)
 
-{{ if .machine.isWork }}
-# Work-specific environment variables
-
-# GitHub
-export GITHUB_TOKEN="${GITHUB_TOKEN:-}"
-
-# Sentry
-export SENTRY_AUTH_TOKEN="${SENTRY_AUTH_TOKEN:-}"
-
-# Northflank
-export NORTHFLANK_API_TOKEN="${NORTHFLANK_API_TOKEN:-}"
-
-# LiteLLM (Codex)
-export LITELLM_API_KEY="${LITELLM_API_KEY:-}"
-
-# AWS
+{{ if .machine.isWork -}}
+export GITHUB_TOKEN="{{ template "ks" "GITHUB_TOKEN" }}"
+export ANTHROPIC_API_KEY="{{ template "ks" "ANTHROPIC_API_KEY" }}"
+export LINEAR_API_KEY="{{ template "ks" "LINEAR_API_KEY" }}"
+export LITELLM_API_KEY="{{ template "ks" "LITELLM_API_KEY" }}"
+export SENTRY_AUTH_TOKEN="{{ template "ks" "SENTRY_AUTH_TOKEN" }}"
+export NORTHFLANK_API_TOKEN="{{ template "ks" "NORTHFLANK_API_TOKEN" }}"
+export GT_AUTH_TOKEN="{{ template "ks" "GT_AUTH_TOKEN" }}"
+export RXDB_PREMIUM="{{ template "ks" "RXDB_PREMIUM" }}"
+export NGROK_AUTHTOKEN="{{ template "ks" "NGROK_AUTHTOKEN" }}"
+export FONTAWESOME_NPM_AUTH_TOKEN="{{ template "ks" "FONTAWESOME_NPM_AUTH_TOKEN" }}"
 export AWS_PROFILE="work-profile"
 export AWS_REGION="us-east-1"
-
-# Node
 export NODE_ENV="production"
-
-{{ else }}
-# Personal environment variables
-
-# GitHub
-export GITHUB_TOKEN="${GITHUB_TOKEN:-}"
-
-# Node
+{{ else -}}
+export GITHUB_TOKEN="{{ template "ks" "GITHUB_TOKEN" }}"
 export NODE_ENV="development"
-
 {{ end }}
-
-# Common environment variables
-
-# Editor
 export EDITOR="nvim"
 export VISUAL="nvim"
-
-# Pager
 export PAGER="less"
 export LESS="-R"
-
-# Colors
 export CLICOLOR=1
 
-{{ if .machine.isDarwin }}
-# macOS specific environment
+{{ if .machine.isDarwin -}}
 export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
-
-# Homebrew
 export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_AUTO_UPDATE=1
-
-{{ end }}
-
-{{ if .machine.isLinux }}
-# Linux specific environment
-
-{{ end }}
+{{ end -}}
