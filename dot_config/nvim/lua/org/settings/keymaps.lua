@@ -94,6 +94,14 @@ return function()
   map("n", "<leader>dpx", "<cmd>DevpodDelete<CR>",  { silent = true, desc = "DevPod: delete workspace" })
   map("n", "<leader>dpi", "<cmd>DevpodStatus<CR>",  { silent = true, desc = "DevPod: workspace status" })
 
+  -- remote-nvim
+  map("n", "<leader>rns", "<cmd>RemoteStart<CR>",     { silent = true, desc = "Remote: start session" })
+  map("n", "<leader>rnx", "<cmd>RemoteStop<CR>",      { silent = true, desc = "Remote: stop session" })
+  map("n", "<leader>rni", "<cmd>RemoteInfo<CR>",      { silent = true, desc = "Remote: session info" })
+  map("n", "<leader>rnl", "<cmd>RemoteLog<CR>",       { silent = true, desc = "Remote: open logs" })
+  map("n", "<leader>rnc", "<cmd>RemoteCleanup<CR>",   { silent = true, desc = "Remote: cleanup resources" })
+  map("n", "<leader>rnd", "<cmd>RemoteConfigDel<CR>", { silent = true, desc = "Remote: delete workspace record" })
+
   -- devcontainer
   map("n", "<leader>dcs", "<cmd>DevcontainerStart<CR>", { silent = true, desc = "Devcontainer start" })
   map("n", "<leader>dca", "<cmd>DevcontainerAttach<CR>", { silent = true, desc = "Devcontainer attach" })
