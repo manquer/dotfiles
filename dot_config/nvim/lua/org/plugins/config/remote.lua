@@ -21,7 +21,7 @@ return function()
     -- Skip GitHub version checks — use whatever neovim is already cached/installed
     offline_mode = {
       enabled = true,
-      no_github = false,
+      no_github = true,
     },
   })
 end
