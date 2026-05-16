@@ -76,13 +76,13 @@ local function load_all_running()
     local running = {}
     for _, ws in ipairs(workspaces) do
       cli.status(ws.id, function(data, _)
-        if data and data.state == 'Running' then
+        if data and data.state ~= 'Stopped' then
           table.insert(running, ws.id)
         end
         pending = pending - 1
         if pending == 0 then
           if #running == 0 then
-            vim.notify('no running workspaces', vim.log.levels.WARN, {
+            vim.notify('all workspaces stopped', vim.log.levels.WARN, {
               title = 'DevPod', replace = notif,
             })
             return
