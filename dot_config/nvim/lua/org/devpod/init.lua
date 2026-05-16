@@ -58,13 +58,19 @@ end
 local function load_all_running()
   cli.list(function(workspaces, err)
     if err or not workspaces then
-      vim.notify('DevPod: list failed — ' .. tostring(err), vim.log.levels.ERROR)
+      vim.notify('list failed — ' .. tostring(err), vim.log.levels.ERROR, { title = 'DevPod' })
       return
     end
     if #workspaces == 0 then
-      vim.notify('DevPod: no workspaces found', vim.log.levels.WARN)
+      vim.notify('no workspaces found', vim.log.levels.WARN, { title = 'DevPod' })
       return
     end
+
+    local notif = vim.notify(
+      string.format('checking %d workspace(s)…', #workspaces),
+      vim.log.levels.INFO,
+      { title = 'DevPod', timeout = false }
+    )
 
     local pending = #workspaces
     local running = {}
@@ -76,22 +82,28 @@ local function load_all_running()
         pending = pending - 1
         if pending == 0 then
           if #running == 0 then
-            vim.notify('DevPod: no running workspaces', vim.log.levels.WARN)
+            vim.notify('no running workspaces', vim.log.levels.WARN, {
+              title = 'DevPod', replace = notif,
+            })
             return
           end
           table.sort(running)
           for _, name in ipairs(running) do
-            vim.cmd('tabnew')
+            vim.cmd('noautocmd tabnew')
             vim.cmd(table.concat({
-              'terminal devpod ssh',
+              'noautocmd terminal devpod ssh',
               vim.fn.shellescape(name),
-              '--',
+              '--command',
               vim.fn.shellescape('tmux attach || tmux'),
             }, ' '))
             pcall(vim.api.nvim_buf_set_name, 0, 'devpod://' .. name)
             vim.cmd('startinsert')
           end
-          vim.notify(string.format('DevPod: opened %d running workspace(s)', #running), vim.log.levels.INFO)
+          vim.notify(
+            string.format('opened %d workspace(s)', #running),
+            vim.log.levels.INFO,
+            { title = 'DevPod', replace = notif }
+          )
         end
       end)
     end

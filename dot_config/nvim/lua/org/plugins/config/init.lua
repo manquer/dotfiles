@@ -24,6 +24,7 @@ local M = {}
 
 function M.setup()
   for _, module in ipairs({
+    "org.plugins.config.notify",
     "org.plugins.config.octo",
     "org.plugins.config.editor",
     "org.plugins.config.diagnostics",

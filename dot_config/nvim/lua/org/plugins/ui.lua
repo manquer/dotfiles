@@ -5,6 +5,7 @@ local function register(Plug)
   Plug("preservim/vim-indent-guides") -- visualize indentation levels
   Plug("nvim-tree/nvim-web-devicons") -- filetype icons for statuslines
   Plug("romgrk/barbar.nvim") -- tabline style buffer tabs
+  Plug("rcarriga/nvim-notify") -- pretty notification popups
   Plug("akinsho/toggleterm.nvim", { tag = "*" }) -- floating terminal integration
   Plug("edluffy/hologram.nvim") -- image previews inside Neovim
 
