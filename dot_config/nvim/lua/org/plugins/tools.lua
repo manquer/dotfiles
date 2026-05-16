@@ -7,6 +7,8 @@ local function register(Plug)
   Plug("olimorris/codecompanion.nvim") -- AI coding assistant
   Plug("NickvanDyke/opencode.nvim") -- opencode AI assistant
   Plug("esensar/nvim-dev-container") -- devcontainer support
+  Plug("MunifTanjim/nui.nvim") -- UI component library (remote-nvim dep)
+  Plug("amitds1997/remote-nvim.nvim") -- remote development over SSH / devpod
 end
 
 return register

@@ -38,6 +38,7 @@ function M.setup()
     "org.plugins.config.windows",
     "org.plugins.config.devcontainer",
     "org.plugins.config.devpod",
+    "org.plugins.config.remote",
   }) do
     run(module)
   end
