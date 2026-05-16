@@ -53,6 +53,51 @@ local function handle_action(action, workspace)
   end
 end
 
+-- Open one tab per running workspace, each attached to its tmux session via devpod ssh.
+-- Invariant: at most one tmux session per pod, so `tmux attach || tmux` is sufficient.
+local function load_all_running()
+  cli.list(function(workspaces, err)
+    if err or not workspaces then
+      vim.notify('DevPod: list failed — ' .. tostring(err), vim.log.levels.ERROR)
+      return
+    end
+    if #workspaces == 0 then
+      vim.notify('DevPod: no workspaces found', vim.log.levels.WARN)
+      return
+    end
+
+    local pending = #workspaces
+    local running = {}
+    for _, ws in ipairs(workspaces) do
+      cli.status(ws.id, function(data, _)
+        if data and data.state == 'Running' then
+          table.insert(running, ws.id)
+        end
+        pending = pending - 1
+        if pending == 0 then
+          if #running == 0 then
+            vim.notify('DevPod: no running workspaces', vim.log.levels.WARN)
+            return
+          end
+          table.sort(running)
+          for _, name in ipairs(running) do
+            vim.cmd('tabnew')
+            vim.cmd(table.concat({
+              'terminal devpod ssh',
+              vim.fn.shellescape(name),
+              '--',
+              vim.fn.shellescape('tmux attach || tmux'),
+            }, ' '))
+            pcall(vim.api.nvim_buf_set_name, 0, 'devpod://' .. name)
+            vim.cmd('startinsert')
+          end
+          vim.notify(string.format('DevPod: opened %d running workspace(s)', #running), vim.log.levels.INFO)
+        end
+      end)
+    end
+  end)
+end
+
 -- Open picker with an action forced (used by commands that accept an optional name arg).
 -- If name is given, run action directly; otherwise open picker and use workspace selection.
 local function with_name_or_pick(name, action, direct_fn)
@@ -79,6 +124,11 @@ function M.setup()
   vim.api.nvim_create_user_command('DevpodList', function()
     picker.open({}, handle_action)
   end, { desc = 'List DevPod workspaces' })
+
+  -- :DevpodLoadAll — open one tab per running workspace, each attached to its tmux session
+  vim.api.nvim_create_user_command('DevpodLoadAll', function()
+    load_all_running()
+  end, { desc = 'Open all running DevPod workspaces in tabs (tmux attach)' })
 
   -- :DevpodUp [name] — start workspace, show output in terminal
   vim.api.nvim_create_user_command('DevpodUp', function(o)

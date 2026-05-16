@@ -87,6 +87,7 @@ return function()
 
   -- devpod
   map("n", "<leader>dpl", "<cmd>DevpodList<CR>",    { silent = true, desc = "DevPod: list workspaces (picker)" })
+  map("n", "<leader>dpa", "<cmd>DevpodLoadAll<CR>", { silent = true, desc = "DevPod: open all running workspaces in tabs" })
   map("n", "<leader>dpu", "<cmd>DevpodUp<CR>",      { silent = true, desc = "DevPod: start workspace" })
   map("n", "<leader>dps", "<cmd>DevpodStop<CR>",    { silent = true, desc = "DevPod: stop workspace" })
   map("n", "<leader>dpc", "<cmd>DevpodConnect<CR>", { silent = true, desc = "DevPod: connect to workspace" })
