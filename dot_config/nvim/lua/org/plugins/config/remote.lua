@@ -1,4 +1,7 @@
 return function()
+  -- remote-nvim is a local-only tool; skip on remote Linux hosts
+  if vim.fn.has("mac") == 0 then return end
+
   local ok, remote = pcall(require, "remote-nvim")
   if not ok then return end
 
