@@ -12,7 +12,6 @@ local function file_exists(path)
 end
 
 return function()
-  local lspconfig = require("lspconfig")
   local schemastore = require("schemastore")
 
   local schema_root = join_path(vim.fn.stdpath("config"), "schema")
@@ -26,7 +25,13 @@ return function()
     }
   end
 
-  lspconfig.yamlls.setup({
+  -- nvim 0.11+ native LSP config (replaces lspconfig framework)
+  vim.lsp.config('yamlls', {
+    cmd = { 'yaml-language-server', '--stdio' },
+    filetypes = { 'yaml', 'yaml.docker-compose', 'yaml.gitlab' },
+    root_dir = function(fname)
+      return vim.fs.root(fname, { '.git', '.yamllint', 'package.json' })
+    end,
     settings = {
       yaml = {
         schemas = vim.tbl_extend("force", schemastore.yaml.schemas(), custom_schemas),
@@ -37,4 +42,5 @@ return function()
       },
     },
   })
+  vim.lsp.enable('yamlls')
 end
