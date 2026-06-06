@@ -28,6 +28,8 @@ eval "$("$BREW" shellenv)"
 # Taps
 tap "withgraphite/tap"
 tap "daytonaio/cli"
+tap "azure/azd"
+tap "hashicorp/tap"
 
 # CLI Tools - Version Control
 brew "git"
@@ -100,7 +102,7 @@ brew "podman-tui"      # Terminal UI for Podman
 brew "kubectl"
 brew "helm"            # Kubernetes package manager
 brew "argocd"          # GitOps continuous delivery for Kubernetes
-brew "terraform"
+brew "hashicorp/tap/terraform" # Disabled in homebrew-core (BUSL license)
 brew "ansible"
 brew "awscli"
 brew "aws-sam-cli"     # AWS Serverless Application Model CLI
