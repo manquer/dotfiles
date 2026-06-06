@@ -10,11 +10,24 @@ if ! command -v brew &> /dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
+# Resolve brew via absolute path so a freshly-installed brew works without a shell reload.
+# Also runs `brew shellenv` so node/npm/etc. installed below are available later in this script.
+if [[ -x /opt/homebrew/bin/brew ]]; then
+    BREW="/opt/homebrew/bin/brew"
+elif [[ -x /usr/local/bin/brew ]]; then
+    BREW="/usr/local/bin/brew"
+else
+    echo "Homebrew installation failed: brew not found in expected locations" >&2
+    exit 1
+fi
+eval "$("$BREW" shellenv)"
+
 # Run brew bundle with inline Brewfile
-brew bundle --file=/dev/stdin <<EOF
+"$BREW" bundle --file=/dev/stdin <<EOF
 
 # Taps
 tap "withgraphite/tap"
+tap "daytonaio/cli"
 
 # CLI Tools - Version Control
 brew "git"
@@ -25,7 +38,9 @@ brew "difftastic"      # Structural diff tool
 brew "git-extras"      # Advanced git commands
 brew "git-filter-repo" # Fast git history rewriting
 brew "git-crypt"       # Transparent file encryption in git
-brew "graphite"        # Modern Git workflow CLI
+brew "withgraphite/tap/graphite" # Modern Git workflow CLI
+brew "bfg"             # Remove large files / secrets from git history
+brew "git-cal"         # GitHub-style commit calendar in the terminal
 
 # CLI Tools - Shell & Terminal
 brew "zsh"
@@ -35,6 +50,8 @@ brew "tmux"
 brew "zellij"          # Modern terminal multiplexer
 brew "starship"        # Modern shell prompt
 brew "atuin"           # Shell history with sync
+brew "nushell"         # Modern data-oriented shell
+brew "zsh-autocomplete" # Real-time autocompletion for zsh
 
 # CLI Tools - Development
 brew "asdf"            # Version manager for multiple languages
@@ -67,12 +84,19 @@ brew "watchman"        # File watching service
 brew "universal-ctags" # Universal ctags for code navigation
 brew "the_silver_searcher" # Fast code search tool
 brew "graphviz"        # Graph visualization software
+brew "pandoc"          # Universal document converter
+brew "marp-cli"        # Markdown-based presentation tool
+brew "check-jsonschema" # JSON Schema validator CLI
+brew "yaml-language-server" # YAML LSP server
+brew "ipython"         # Enhanced Python REPL
 
 # CLI Tools - DevOps & Cloud
 brew "docker"
+brew "docker-compose"  # Multi-container Docker orchestration
 brew "colima"          # Container runtime for macOS
 brew "podman"          # Alternative container runtime
 brew "podman-compose"  # Docker compose for Podman
+brew "podman-tui"      # Terminal UI for Podman
 brew "kubectl"
 brew "helm"            # Kubernetes package manager
 brew "argocd"          # GitOps continuous delivery for Kubernetes
@@ -91,6 +115,12 @@ brew "crane"           # Container registry interaction tool
 brew "skopeo"          # Work with container images and registries
 brew "buildkit"        # Modern Docker build engine
 brew "rover"           # GraphQL CLI for Apollo Federation
+brew "coder"           # Self-hosted remote development platform CLI
+brew "daytona"         # Development environment manager
+brew "hasura-cli"      # Hasura GraphQL Engine CLI
+brew "otel-cli"        # OpenTelemetry CLI for shell scripts
+brew "gemini-cli"      # Google Gemini CLI
+brew "opencode"        # OpenCode AI coding assistant CLI
 
 # CLI Tools - Utilities
 brew "wget"
@@ -132,20 +162,62 @@ brew "lynx"            # Text-based web browser
 brew "telnet"          # Telnet client for debugging
 brew "zx"              # Shell scripting with JavaScript
 brew "qodana"          # JetBrains code quality platform CLI
+brew "caddy"           # Modern web server with automatic HTTPS
+brew "chafa"           # Image-to-terminal graphics converter
+brew "glances"         # Cross-platform system monitor
+brew "asitop"          # Apple Silicon performance monitor
+brew "mactop"          # Apple Silicon top-like monitor
+brew "gnu-sed"         # GNU sed (better defaults than BSD sed on macOS)
+brew "grep"            # GNU grep
+brew "mpv"             # Media player
+brew "ntfy"            # Push notifications via HTTP
+brew "powershell"      # PowerShell cross-platform
+brew "taskwarrior-tui" # TUI for Taskwarrior
+brew "xan"             # Fast CSV manipulation toolkit
 
 {{ if .machine.hasGui }}
-# GUI Applications - Development
+# GUI Applications - Terminals
 cask "iterm2"
+cask "ghostty"         # Modern GPU-accelerated terminal
+cask "kitty"           # GPU-based terminal emulator
+cask "warp"            # AI-powered terminal
+
+# GUI Applications - Editors & IDEs
+cask "sublime-text"
+cask "sublime-merge"   # Git client from Sublime
+cask "zed"             # High-performance multiplayer editor
+cask "jetbrains-toolbox" # JetBrains IDE manager
+cask "intellij-idea"
+cask "pycharm"
+cask "webstorm"
+cask "goland"
+cask "phpstorm"
+cask "clion"
+cask "rubymine"
+cask "rustrover"
+
+# GUI Applications - Development
 cask "postman"
+cask "insomnia"        # REST/GraphQL API client
+cask "bruno"           # Local-first API client
 cask "tableplus"       # Database GUI
+cask "pgadmin4"        # PostgreSQL admin GUI
+cask "devpod"          # Codespaces-like dev environments
+cask "ngrok"           # Secure tunnels to localhost
+cask "clickhouse"      # ClickHouse client
 
 # GUI Applications - Browsers
 cask "google-chrome"
 cask "firefox"
+cask "microsoft-edge"
+cask "chromium"
 
 # GUI Applications - Communication
 cask "slack"
 cask "discord"
+cask "microsoft-teams"
+cask "linear"          # Linear issue tracker
+cask "rocket-chat"
 
 # GUI Applications - Productivity
 cask "notion"
@@ -153,18 +225,36 @@ cask "obsidian"
 cask "rectangle"       # Window manager
 cask "raycast"         # Spotlight alternative
 cask "caffeine"        # Keep Mac awake
+cask "figma"
+cask "remarkable"      # reMarkable tablet companion
+
+# GUI Applications - Media
+cask "vlc"
+cask "audacity"
+cask "gimp"
+cask "inkscape"
+cask "libreoffice"
+
+# GUI Applications - AI / Local Models
+cask "ollama"          # Run LLMs locally
 
 # GUI Applications - Utilities
 cask "the-unarchiver"
 cask "appcleaner"
 cask "keepingyouawake"
 cask "stats"           # System monitor in menu bar
+cask "cyberduck"       # SFTP/cloud storage client
+cask "tunnelblick"     # OpenVPN client
+cask "xquartz"         # X11 server for macOS
 {{ end }}
 
 # Fonts
 cask "font-fira-code-nerd-font"
 cask "font-jetbrains-mono-nerd-font"
 cask "font-hack-nerd-font"
+cask "font-monaspace-nerd-font"
+cask "font-roboto-mono-nerd-font"
+cask "font-zed-mono-nerd-font"
 
 # Mac App Store apps (requires mas)
 brew "mas"
