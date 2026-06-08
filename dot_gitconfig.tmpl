@@ -37,10 +37,24 @@
 [user]
   name = {{ .git.name }}
   email = {{ .git.email }}
+{{- if .git.signingkey }}
   signingkey = {{ .git.signingkey }}
+{{- end }}
+{{- if .git.signingkey }}
+
+[gpg]
+  format = {{ if or (hasSuffix ".pub" .git.signingkey) (contains "/.ssh/" .git.signingkey) }}ssh{{ else }}openpgp{{ end }}
+{{- if or (hasSuffix ".pub" .git.signingkey) (contains "/.ssh/" .git.signingkey) }}
+
+[gpg "ssh"]
+  allowedSignersFile = ~/.config/git/allowed_signers
+{{- end }}
+{{- end }}
 
 [tag]
+{{- if .git.signingkey }}
   gpgSign = true
+{{- end }}
   sort = version:refname
 
 [core]
@@ -49,7 +63,9 @@
 
 [commit]
   verbose = true
+{{- if .git.signingkey }}
   gpgsign = true
+{{- end }}
 
 [help]
   autocorrect = prompt
