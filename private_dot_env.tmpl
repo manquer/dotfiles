@@ -1,25 +1,16 @@
-{{- /* Read a secret from macOS Keychain, returning empty string if not found */ -}}
-{{- define "ks" -}}{{ output "sh" "-c" (printf "security find-generic-password -s chezmoi -a %s -w 2>/dev/null || true" .) | trim }}{{- end -}}
-# Environment variables — managed by chezmoi
-# Secrets sourced from macOS Keychain (Secure Enclave backed on Apple Silicon)
-# First-time setup: chezmoi apply  (run_once_before_01-setup-keychain.sh.tmpl will prompt)
+# Non-secret environment variables — managed by chezmoi.
+# Sourced by ~/.config/zsh/conf.d/05-env.zsh on shell start.
+#
+# SECRETS ARE NOT STORED HERE. They are read live from the macOS Keychain
+# (service "chezmoi") on each shell start by conf.d/15-secrets.zsh.
+# First-time setup / adding secrets: see run_once_before_01-setup-keychain.sh.tmpl
+# or: security add-generic-password -s chezmoi -a NAME -w 'value' -T /usr/bin/security -U
 
 {{ if .machine.isWork -}}
-export GITHUB_TOKEN="{{ template "ks" "GITHUB_TOKEN" }}"
-export ANTHROPIC_API_KEY="{{ template "ks" "ANTHROPIC_API_KEY" }}"
-export LINEAR_API_KEY="{{ template "ks" "LINEAR_API_KEY" }}"
-export LITELLM_API_KEY="{{ template "ks" "LITELLM_API_KEY" }}"
-export SENTRY_AUTH_TOKEN="{{ template "ks" "SENTRY_AUTH_TOKEN" }}"
-export NORTHFLANK_API_TOKEN="{{ template "ks" "NORTHFLANK_API_TOKEN" }}"
-export GT_AUTH_TOKEN="{{ template "ks" "GT_AUTH_TOKEN" }}"
-export RXDB_PREMIUM="{{ template "ks" "RXDB_PREMIUM" }}"
-export NGROK_AUTHTOKEN="{{ template "ks" "NGROK_AUTHTOKEN" }}"
-export FONTAWESOME_NPM_AUTH_TOKEN="{{ template "ks" "FONTAWESOME_NPM_AUTH_TOKEN" }}"
 export AWS_PROFILE="work-profile"
 export AWS_REGION="us-east-1"
 export NODE_ENV="production"
 {{ else -}}
-export GITHUB_TOKEN="{{ template "ks" "GITHUB_TOKEN" }}"
 export NODE_ENV="development"
 {{ end }}
 export EDITOR="nvim"

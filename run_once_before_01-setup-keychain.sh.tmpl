@@ -24,12 +24,14 @@ keychain_set() {
   IFS= read -rs value </dev/tty
   printf "\n"
 
+  # -T /usr/bin/security grants the `security` CLI access without prompting,
+  # so the live loader (conf.d/15-secrets.zsh) reads silently on each shell.
   if [[ -n "$value" ]]; then
-    security add-generic-password -s "$SERVICE" -a "$user" -w "$value" -U
+    security add-generic-password -s "$SERVICE" -a "$user" -w "$value" -T /usr/bin/security -U
     chezmoi secret keyring set --service="$SERVICE" --user="$user" <<< "$value"
   else
     # Store empty string so template doesn't error
-    security add-generic-password -s "$SERVICE" -a "$user" -w "" -U
+    security add-generic-password -s "$SERVICE" -a "$user" -w "" -T /usr/bin/security -U
     chezmoi secret keyring set --service="$SERVICE" --user="$user" <<< ""
   fi
 }
