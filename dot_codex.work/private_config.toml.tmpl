@@ -1,4 +1,3 @@
-model_provider = "litellm"
 model = "gpt-5.1-codex"
 sandbox = "danger-full-access"
 
@@ -20,13 +19,6 @@ trust_level = "untrusted"
 
 [projects."{{ .chezmoi.homeDir }}/git/talview/frontend/webclients"]
 trust_level = "trusted"
-
-[model_providers.litellm]
-name = "LiteLLM"
-base_url = {{ .codex.baseUrl | quote }}
-env_key = "LITELLM_API_KEY"
-wire_api = "responses"
-
 
 [shell_environment_policy]
 inherit = "all"
