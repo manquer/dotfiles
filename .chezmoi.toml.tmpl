@@ -36,11 +36,6 @@
 {{- $email := promptStringOnce . "git.email" "Git user email" -}}
 {{- $signingkey := promptStringOnce . "git.signingkey" "Git GPG signing key (leave empty if none)" -}}
 
-{{- $codexBaseUrl := "" -}}
-{{- if eq $machineType "work" -}}
-{{-   $codexBaseUrl = promptStringOnce . "codex.baseUrl" "Codex LiteLLM base URL" "https://litellm.talview.com/v1" -}}
-{{- end -}}
-
 [data]
     [data.machine]
         type = {{ $machineType | quote }}
@@ -60,6 +55,3 @@
         name = {{ $name | quote }}
         email = {{ $email | quote }}
         signingkey = {{ $signingkey | quote }}
-
-    [data.codex]
-        baseUrl = {{ $codexBaseUrl | quote }}
