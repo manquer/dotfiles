@@ -1,6 +1,7 @@
 local function register(Plug)
   Plug("preservim/nerdtree") -- filesystem explorer tree
   Plug("Xuyuanp/nerdtree-git-plugin") -- git decorations for NERDTree
+  Plug("ryanoasis/vim-devicons") -- filetype glyph icons for NERDTree (must load after nerdtree/airline)
   Plug("tiagofumo/vim-nerdtree-syntax-highlight") -- improved NERDTree highlight groups
   Plug("justinmk/vim-sneak") -- two-character jump motions
   Plug("pechorin/any-jump.vim") -- jump to symbol implementations
