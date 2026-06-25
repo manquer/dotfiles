@@ -53,6 +53,10 @@
     "use_smartcase_find": true
   },
   "base_keymap": "VSCode",
+  "buffer_font_family": "FiraCode Nerd Font",
+  "buffer_font_features": {
+    "calt": true
+  },
   "buffer_font_size": 16,
   "theme": {
     "mode": "system",
@@ -134,6 +138,7 @@
     "JSON": ["*.json", ".eslintrc", ".prettierrc", "tsconfig*.json"]
   },
 
+  "ui_font_family": "FiraCode Nerd Font",
   "ui_font_size": 16,
   "tabs": {
     "file_icons": true,

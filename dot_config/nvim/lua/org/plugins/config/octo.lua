@@ -78,7 +78,7 @@ return function()
     },
     file_panel = {
       size = 10, -- changed files panel rows
-      use_icons = true, -- require nvim-web-devicons for icons
+      icons = true, -- true = nvim-web-devicons, false = disabled, function = custom provider
     },
     colors = {
       white = "#ffffff",
