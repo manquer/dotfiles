@@ -3,7 +3,11 @@ set -euo pipefail
 
 if [[ ! -d "${HOME}/.oh-my-zsh" ]]; then
     echo "Installing Oh My Zsh..."
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    # --unattended: no chsh, no interactive prompts
+    # --keep-zshrc: do NOT replace the chezmoi-managed ~/.zshrc with the OMZ
+    #               default (which would reset the theme to robbyrussell and
+    #               drop the Powerlevel10k config).
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
 fi
 
 # Install Powerlevel10k theme

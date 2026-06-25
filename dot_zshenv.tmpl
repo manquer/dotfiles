@@ -1,11 +1,14 @@
-# Environment variables - loaded for all shells
-# This file is sourced first
+# ~/.zshenv - loaded first, for ALL zsh invocations (scripts, interactive, login)
 
 # XDG Base Directory Specification
 export XDG_CONFIG_HOME="${HOME}/.config"
 export XDG_DATA_HOME="${HOME}/.local/share"
 export XDG_CACHE_HOME="${HOME}/.cache"
 export XDG_STATE_HOME="${HOME}/.local/state"
+
+# Local binaries on PATH for non-interactive shells too (conf.d re-asserts this
+# for interactive shells, but scripts only see what is set here).
+export PATH="${HOME}/.local/bin:${PATH}"
 
 # Editor
 export EDITOR="nvim"
@@ -15,10 +18,8 @@ export VISUAL="nvim"
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
 
-# History
-export HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
-export HISTSIZE=100000
-export SAVEHIST=100000
+# History settings live in ~/.config/zsh/conf.d/05-env.zsh so they take effect
+# AFTER Oh My Zsh loads (it would otherwise override HISTFILE).
 
 {{ if .machine.isDarwin }}
 # macOS specific
