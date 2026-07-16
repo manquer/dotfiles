@@ -12,13 +12,12 @@ Host REDACTED
   SendEnv LINEAR_API_KEY
   SendEnv GITHUB_TOKEN
   SendEnv GT_AUTH_TOKEN
-  SendEnv RXDB_PREMIUM
   SendEnv NGROK_AUTHTOKEN
   SendEnv SENTRY_AUTH_TOKEN
   SendEnv FONTAWESOME_NPM_AUTH_TOKEN
   IdentityFile ~/.ssh/id_ed25519
 
 Host REDACTED-HOST
-  IdentityFile ~/.ssh/REDACTED-KEY
+  IdentityFile ~/.ssh/REDACTED-KEY.pem
   IdentitiesOnly yes
   User tv
