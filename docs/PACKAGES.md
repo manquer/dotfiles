@@ -168,7 +168,6 @@ Complete list of packages, tools, and applications installed by this dotfiles se
 | `ascii-image-converter` | ASCII art |
 | `yt-dlp` | Video downloader |
 | `zx` | JS shell scripting |
-| `qodana` | Code quality CLI |
 | `mas` | Mac App Store CLI |
 
 ## GUI Applications (Casks)
