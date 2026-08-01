@@ -21,6 +21,7 @@ return function()
   vim.cmd([[set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}]])
 
   -- display
+  vim.opt.termguicolors = true
   vim.opt.colorcolumn = ""
   vim.cmd("highlight clear ColorColumn")
 

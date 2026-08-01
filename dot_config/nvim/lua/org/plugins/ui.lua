@@ -1,6 +1,6 @@
 local function register(Plug)
   Plug("vim-airline/vim-airline") -- lean statusline with rich sections
-  Plug("catppuccin/nvim", { as = "catppuccin" }) -- catppuccin theme collection
+  Plug("RRethy/base16-nvim") -- base16 colorschemes, incl. Black Metal (Burzum) to match ghostty
 --  Plug("EdenEast/nightfox.nvim") -- nightfox theme variants
   Plug("preservim/vim-indent-guides") -- visualize indentation levels
   Plug("nvim-tree/nvim-web-devicons") -- filetype icons for statuslines
