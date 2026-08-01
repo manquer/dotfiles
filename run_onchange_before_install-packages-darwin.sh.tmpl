@@ -22,6 +22,11 @@ else
 fi
 eval "$("$BREW" shellenv)"
 
+# Trust external (non-official) taps so brew bundle can load their formulae.
+for tap in withgraphite/tap daytonaio/cli azure/azd azure/kubelogin hashicorp/tap temporalio/brew thezoraiz/ascii-image-converter; do
+    "$BREW" trust --tap "$tap"
+done
+
 # Run brew bundle with inline Brewfile
 "$BREW" bundle --file=/dev/stdin <<EOF
 
@@ -31,6 +36,8 @@ tap "daytonaio/cli"
 tap "azure/azd"
 tap "azure/kubelogin"
 tap "hashicorp/tap"
+tap "temporalio/brew"
+tap "thezoraiz/ascii-image-converter"
 
 # CLI Tools - Version Control
 brew "git"
