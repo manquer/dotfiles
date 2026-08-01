@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -eufo pipefail
+
+# Reruns automatically whenever the plugin list changes (chezmoi reruns
+# run_onchange_ scripts when their rendered content changes):
+{{ range $path := (glob (joinPath .chezmoi.sourceDir "dot_config/nvim/lua/org/plugins/*.lua")) -}}
+# {{ base $path }}: {{ include $path | sha256sum }}
+{{ end -}}
+
+if ! command -v nvim &> /dev/null; then
+    echo "nvim not found, skipping Neovim plugin install."
+    exit 0
+fi
+
+echo "Installing/updating Neovim plugins..."
+nvim --headless "+PlugInstall --sync" +qa
+echo "Neovim plugins installed successfully."
