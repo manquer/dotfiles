@@ -20,7 +20,7 @@ export LESS="-R"
 export CLICOLOR=1
 
 {{ if .machine.isDarwin -}}
-export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
+export DOCKER_HOST="unix://${HOME}/.config/colima/default/docker.sock"
 export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_AUTO_UPDATE=1
 {{ end -}}
