@@ -6,7 +6,7 @@ Complete list of packages, tools, and applications installed by this dotfiles se
 
 | Platform | Method | Count |
 |----------|--------|-------|
-| macOS | Homebrew | 108 formulas |
+| macOS | Homebrew | 138 formulas |
 | macOS | Homebrew Casks | 20 apps |
 | macOS | npm | 18 globals |
 | Linux | pacman/apt/dnf | Core tools |
@@ -54,6 +54,8 @@ Complete list of packages, tools, and applications installed by this dotfiles se
 | `elixir` | Elixir language |
 | `lua` | Lua scripting |
 | `openjdk` | Java Development Kit |
+| `autoconf` | Generates configure scripts |
+| `automake` | Provides `aclocal`; needed to build native npm deps from source |
 
 ### Editors
 
