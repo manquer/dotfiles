@@ -142,8 +142,8 @@
   },
 
   "terminal": {
-   "font_family": "FiraCode Nerd Font",
-   "shell": {
+    "font_family": "FiraCode Nerd Font Mono",
+    "shell": {
       "program": "zsh"
     },
     "working_directory": "current_project_directory",
