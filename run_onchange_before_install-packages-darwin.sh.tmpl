@@ -81,6 +81,12 @@ brew "lua"             # Lua scripting language
 brew "openjdk"         # Java Development Kit
 brew "autoconf"        # Generates configure scripts (autoreconf)
 brew "automake"        # Provides aclocal; needed to build native npm deps (e.g. gifsicle) from source
+brew "make"            # GNU Make (gmake) - macOS ships an ancient 3.81 due to GPLv3 avoidance
+brew "pkg-config"      # Locates library compile/link flags for building from source
+brew "cmake"           # Cross-platform build system generator
+brew "libtool"         # GNU libtool for building shared libraries
+brew "llvm"            # Upstream LLVM/Clang toolchain, newer than Xcode's bundled clang
+brew "gcc"             # Real GNU GCC (Xcode's "gcc" is actually clang in disguise)
 brew "jq"              # JSON processor
 brew "yq"              # YAML processor
 brew "tree"            # Directory tree viewer
@@ -178,6 +184,11 @@ brew "chafa"           # Image-to-terminal graphics converter
 brew "glances"         # Cross-platform system monitor
 brew "asitop"          # Apple Silicon performance monitor
 brew "mactop"          # Apple Silicon top-like monitor
+brew "coreutils"      # GNU core utilities (ls, cat, etc. - better defaults than BSD versions on macOS)
+brew "findutils"       # GNU find, xargs, locate (gfind, gxargs, glocate)
+brew "gnu-tar"         # GNU tar (better defaults than BSD tar on macOS)
+brew "gawk"            # GNU awk (BSD/macOS ships the older "one true awk")
+brew "diffutils"       # GNU diff, cmp, diff3 (macOS ships an old BSD diff)
 brew "gnu-sed"         # GNU sed (better defaults than BSD sed on macOS)
 brew "grep"            # GNU grep
 brew "mpv"             # Media player

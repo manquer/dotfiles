@@ -6,7 +6,7 @@ Complete list of packages, tools, and applications installed by this dotfiles se
 
 | Platform | Method | Count |
 |----------|--------|-------|
-| macOS | Homebrew | 138 formulas |
+| macOS | Homebrew | 149 formulas |
 | macOS | Homebrew Casks | 20 apps |
 | macOS | npm | 18 globals |
 | Linux | pacman/apt/dnf | Core tools |
@@ -56,6 +56,12 @@ Complete list of packages, tools, and applications installed by this dotfiles se
 | `openjdk` | Java Development Kit |
 | `autoconf` | Generates configure scripts |
 | `automake` | Provides `aclocal`; needed to build native npm deps from source |
+| `make` | GNU Make (`gmake`); macOS ships an ancient 3.81 due to GPLv3 avoidance |
+| `pkg-config` | Locates library compile/link flags for building from source |
+| `cmake` | Cross-platform build system generator |
+| `libtool` | GNU libtool for building shared libraries |
+| `llvm` | Upstream LLVM/Clang toolchain, newer than Xcode's bundled clang |
+| `gcc` | Real GNU GCC (Xcode's `gcc` is actually clang in disguise) |
 
 ### Editors
 
@@ -84,6 +90,20 @@ Complete list of packages, tools, and applications installed by this dotfiles se
 | `ctags` | Code navigation |
 | `the_silver_searcher` | Code search (`ag`) |
 | `graphviz` | Graph visualization |
+
+### GNU Utilities
+
+GNU versions of core tools, since macOS ships older BSD/licensing-frozen equivalents.
+
+| Package | Description |
+|---------|-------------|
+| `coreutils` | GNU core utilities (`ls`, `cat`, etc.) |
+| `findutils` | GNU find, xargs, locate (`gfind`, `gxargs`, `glocate`) |
+| `gnu-tar` | GNU tar (`gtar`) |
+| `gawk` | GNU awk; macOS ships the older "one true awk" |
+| `diffutils` | GNU diff, cmp, diff3 (`gdiff`) |
+| `gnu-sed` | GNU sed (`gsed`) |
+| `grep` | GNU grep |
 
 ### DevOps & Cloud
 
