@@ -6,7 +6,7 @@ Complete list of packages, tools, and applications installed by this dotfiles se
 
 | Platform | Method | Count |
 |----------|--------|-------|
-| macOS | Homebrew | 149 formulas |
+| macOS | Homebrew | 150 formulas |
 | macOS | Homebrew Casks | 20 apps |
 | macOS | npm | 18 globals |
 | Linux | pacman/apt/dnf | Core tools |
@@ -35,6 +35,7 @@ Complete list of packages, tools, and applications installed by this dotfiles se
 | `fish` | Friendly interactive shell |
 | `tmux` | Terminal multiplexer |
 | `zellij` | Modern terminal multiplexer |
+| `herdr` | Agent multiplexer in the terminal |
 | `starship` | Cross-shell prompt |
 | `atuin` | Shell history sync |
 

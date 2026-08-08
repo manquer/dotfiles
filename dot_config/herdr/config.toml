@@ -1,0 +1,10 @@
+# Keep Herdr's prefix aligned with tmux.
+onboarding = false
+
+[keys]
+prefix = "backtick"
+
+[terminal]
+default_shell = "/opt/homebrew/bin/zsh"
+shell_mode = "auto"
+new_cwd = "follow"
