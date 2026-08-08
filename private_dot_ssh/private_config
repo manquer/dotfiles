@@ -5,18 +5,6 @@ Include ~/.config/colima/ssh_config
 
 ServerAliveInterval 60
 
-Host REDACTED
-  IdentitiesOnly yes
-  User mani
-  SendEnv AWS_PROFILE
-  SendEnv LINEAR_API_KEY
-  SendEnv GITHUB_TOKEN
-  SendEnv GT_AUTH_TOKEN
-  SendEnv NGROK_AUTHTOKEN
-  SendEnv SENTRY_AUTH_TOKEN
-  SendEnv FONTAWESOME_NPM_AUTH_TOKEN
-  IdentityFile ~/.ssh/id_ed25519
-
 Host REDACTED-HOST
   IdentityFile ~/.ssh/REDACTED-KEY.pem
   IdentitiesOnly yes
