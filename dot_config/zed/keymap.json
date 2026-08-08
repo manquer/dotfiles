@@ -1,5 +1,17 @@
 [
   //
+  // Zed's bundled vim keymap binds bare "," to vim::RepeatFindReversed
+  // (VimControl && !menu). `null` only stops resolution in this file, it
+  // doesn't remove the built-in default, so the leader below needs an
+  // explicit zed::Unbind or "," can resolve to that instead of the chords.
+  {
+    "context": "VimControl && !menu",
+    "bindings": {
+      ",": ["zed::Unbind", "vim::RepeatFindReversed"]
+    }
+  },
+
+  //
   // ── NORMAL MODE (mirrors nvim <leader> = , keymaps) ──────────────────
   //
   {
