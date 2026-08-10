@@ -4,8 +4,3 @@ Include ~/.namespace/ssh/*.ssh
 Include ~/.config/colima/ssh_config
 
 ServerAliveInterval 60
-
-Host REDACTED-HOST
-  IdentityFile ~/.ssh/REDACTED-KEY.pem
-  IdentitiesOnly yes
-  User tv
