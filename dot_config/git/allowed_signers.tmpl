@@ -1,3 +1,3 @@
-{{ if .git.signingkey -}}
+{{ if or (hasSuffix ".pub" .git.signingkey) (contains "/.ssh/" .git.signingkey) -}}
 {{ .git.email }} {{ output "cat" .git.signingkey | trim }}
 {{- end }}
