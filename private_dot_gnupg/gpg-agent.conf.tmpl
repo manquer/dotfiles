@@ -1,0 +1,4 @@
+{{- if .machine.isDarwin -}}
+# Managed by chezmoi — GUI passphrase prompt (brew install pinentry-mac)
+pinentry-program {{ if eq .machine.arch "arm64" }}/opt/homebrew{{ else }}/usr/local{{ end }}/bin/pinentry-mac
+{{ end -}}
