@@ -1,0 +1,7 @@
+# Never commit key material dropped into the source dir. Secrets belong in the
+# macOS Keychain (service "chezmoi") — see run_once_before_01-setup-keychain.sh.tmpl.
+# chezmoi ignores source entries starting with "." (except .chezmoi*), so this
+# file is git-only and is never applied to $HOME.
+.env.key
+*.key
+*.pem
