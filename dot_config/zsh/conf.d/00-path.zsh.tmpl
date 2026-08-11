@@ -1,6 +1,6 @@
 # Path management - loaded early
 # Ensure unique path entries
-typeset -U path
+typeset -U path manpath
 
 # Local binaries
 path=(
@@ -17,6 +17,22 @@ path=(
     /usr/local/opt/libpq/bin
     $path
 )
+
+# GNU userland ahead of the BSD versions macOS ships, so ls/find/sed/tar/awk/grep
+# behave the same here as on Linux. Only the formulae in the Brewfile are listed;
+# each is skipped when it is not installed (e.g. a fresh machine mid-bootstrap).
+for gnu_formula in coreutils findutils gnu-sed gnu-tar gawk grep; do
+    if [[ -d "/opt/homebrew/opt/${gnu_formula}/libexec/gnubin" ]]; then
+        path=("/opt/homebrew/opt/${gnu_formula}/libexec/gnubin" $path)
+        manpath=("/opt/homebrew/opt/${gnu_formula}/libexec/gnuman" $manpath)
+    fi
+done
+unset gnu_formula
+
+# A trailing empty entry keeps man's own search path in play; without it MANPATH
+# would resolve to the gnuman dirs alone and every other man page would vanish.
+# typeset -U drops this again if an empty entry is already present.
+manpath+=("")
 {{ end }}
 
 # Cargo (Rust)

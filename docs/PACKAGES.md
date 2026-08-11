@@ -106,6 +106,12 @@ GNU versions of core tools, since macOS ships older BSD/licensing-frozen equival
 | `gnu-sed` | GNU sed (`gsed`) |
 | `grep` | GNU grep |
 
+`.config/zsh/conf.d/00-path.zsh` puts each formula's `libexec/gnubin` ahead of
+`/usr/bin`, so the unprefixed names (`find`, `sed`, `tar`, `awk`, `grep`, and the
+coreutils set) resolve to the GNU builds — no `g`-prefix needed. The matching
+`libexec/gnuman` directories go on `MANPATH` so `man` shows the GNU pages too.
+`diffutils` is not keg-only and needs no gnubin entry.
+
 ### DevOps & Cloud
 
 | Package | Description |
