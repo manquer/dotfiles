@@ -26,10 +26,9 @@ export LC_ALL="en_US.UTF-8"
 export DOCKER_HOST="unix://${HOME}/.config/colima/default/docker.sock"
 {{ end }}
 
-{{ if .machine.isWork }}
-# Work-specific environment
-export NODE_ENV="production"
-{{ else }}
-# Personal environment
-export NODE_ENV="development"
-{{ end }}
+# NODE_ENV IS DELIBERATELY NOT EXPORTED HERE. A login-shell NODE_ENV reaches
+# every tool that reads it, and two of them change behaviour destructively:
+# `pnpm install` omits devDependencies under `production`, and Vite resolves the
+# `development|production` export condition from it — so a dev server resolves a
+# workspace package's `production` entry and fails on packages that build no
+# `dist/`. Per-project `.env`/`.envrc` files own this variable instead.
