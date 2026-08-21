@@ -25,3 +25,15 @@ export DOCKER_HOST="unix://${HOME}/.config/colima/default/docker.sock"
 export HOMEBREW_NO_ANALYTICS=1
 export HOMEBREW_NO_AUTO_UPDATE=1
 {{ end -}}
+
+# Turborepo remote cache (Namespace, not Vercel). The credential is
+# TURBO_TOKEN and lives in the Keychain — conf.d/15-secrets.zsh loads it.
+# These two are not secrets: an endpoint and a team slug.
+#
+# TURBO_TEAM IS PER-REPOSITORY AND THIS IS THE crusible VALUE. webclients
+# uses `webclients`, carried in each of its worktrees' own `.env`. Those
+# files are NOT exported by its `.envrc` (which only does `PATH_add
+# node_modules/.bin`), so a webclients shell inherits the value below
+# unless its own tooling loads that `.env` first.
+export TURBO_API="https://turbo.cache.ord.namespaceapis.com"
+export TURBO_TEAM="crusible"

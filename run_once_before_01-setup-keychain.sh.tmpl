@@ -42,14 +42,13 @@ echo ""
 
 {{ if .machine.isWork -}}
 keychain_set "GITHUB_TOKEN"                "GitHub Token"
-keychain_set "LINEAR_API_KEY"              "Linear API Key"
 keychain_set "SENTRY_AUTH_TOKEN"           "Sentry Auth Token"
 keychain_set "NORTHFLANK_API_TOKEN"        "Northflank API Token"
-keychain_set "GT_AUTH_TOKEN"               "GT Auth Token"
+keychain_set "CLOUDFLARE_API_TOKEN"        "Cloudflare API Token"
+keychain_set "TURBO_TOKEN"                 "Turborepo Remote Cache Token"
 keychain_set "RXDB_PREMIUM"                "RxDB Premium Token"
 keychain_set "NGROK_AUTHTOKEN"             "Ngrok Auth Token"
 keychain_set "FONTAWESOME_NPM_AUTH_TOKEN"  "FontAwesome NPM Auth Token"
-keychain_set "CONTEXT7_API_KEY"            "Context7 API Key"
 {{ else -}}
 keychain_set "GITHUB_TOKEN"  "GitHub Token"
 {{ end -}}
