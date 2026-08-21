@@ -6,12 +6,13 @@
 # First-time setup / adding secrets: see run_once_before_01-setup-keychain.sh.tmpl
 # or: security add-generic-password -s chezmoi -a NAME -w 'value' -T /usr/bin/security -U
 
+# NODE_ENV IS DELIBERATELY NOT SET HERE — see the note at the end of
+# ~/.zshenv. This file is sourced by conf.d/05-env.zsh on every shell start,
+# so anything exported here lands in the login shell just as ~/.zshenv would.
+# Per-project `.env`/`.envrc` files own NODE_ENV instead.
 {{ if .machine.isWork -}}
 export AWS_PROFILE="work-profile"
 export AWS_REGION="us-east-1"
-export NODE_ENV="production"
-{{ else -}}
-export NODE_ENV="development"
 {{ end }}
 export EDITOR="nvim"
 export VISUAL="nvim"
