@@ -131,11 +131,23 @@ bind-key ` send-prefix
 # Large history
 set-option -g history-limit 400000
 
+# Renumber windows after one is closed
+set-option -g renumber-windows on
+
 # 256 color support
 set -g default-terminal "xterm-256color"
 
 # Use Homebrew zsh
 set-option -g default-shell /opt/homebrew/bin/zsh
+
+# Reload the configuration in the running session with the prefix key followed by r
+bind-key r source-file ~/.tmux.conf \; display-message "Tmux configuration reloaded"
+```
+
+To reload it directly from a shell in an existing session:
+
+```bash
+tmux source-file ~/.tmux.conf
 ```
 
 ### Key Bindings
@@ -143,6 +155,7 @@ set-option -g default-shell /opt/homebrew/bin/zsh
 | Key | Action |
 |-----|--------|
 | `` ` `` | Prefix key |
+| `` ` r `` | Reload `~/.tmux.conf` |
 | `` ` + c`` | New window |
 | `` ` + n`` | Next window |
 | `` ` + p`` | Previous window |
