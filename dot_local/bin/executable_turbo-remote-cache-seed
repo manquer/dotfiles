@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+# Write `.turbo/config.json` into every worktree of a repository, so the
+# Turborepo remote cache is configured by FILE rather than by environment.
+#
+# WHY A FILE AND NOT THE ENVIRONMENT. An environment variable reaches only
+# processes started after it was set. A long-lived agent, a herdr pane and a dev
+# server each froze a copy of their environment at start, and there is no way to
+# change one from outside — measured 2026-09-07, four running agents across two
+# devcontainers had no TURBO_* at all and no restart was wanted. Turbo reads
+# `<worktree>/.turbo/config.json` on every invocation, so a process with a stale
+# environment still gets the remote cache.
+#
+# READ THIS BEFORE TRUSTING A "COLD" TURBO NUMBER. `scripts/lib/turbo-cache-env.ts`
+# strips TURBO_TOKEN/TURBO_API/TURBO_TEAM from a measured command's ENVIRONMENT to
+# force a local-only run. This file OUTRANKS that: verified 2026-09-07, with all
+# three unset and `TURBO_CACHE_DIR` on an empty scratch directory, 29 of 36 tasks
+# still resolved `source: REMOTE`. So a cold claim now needs the file moved aside,
+# not the variables unset. That is deliberate — the fleet measures what it PAYS,
+# not a cold start nobody runs.
+#
+# Values come from the environment when it has them (which is every shell in a
+# devcontainer since ~/.secrets.zsh), and from the macOS Keychain plus ~/.env
+# otherwise, so the same script runs on the Mac and inside a container.
+set -euo pipefail
+
+die() {
+	printf 'turbo-remote-cache-seed: %s\n' "$1" >&2
+	exit 1
+}
+
+# The Keychain read, matching conf.d/15-secrets.zsh. /usr/bin/base64 by absolute
+# path: coreutils' gnubin is ahead of /usr/bin and GNU base64 rejects BSD `-D`.
+read_keychain() {
+	local val decoded
+	command -v security >/dev/null 2>&1 || return 1
+	val="$(security find-generic-password -s chezmoi -a "$1" -w 2>/dev/null)" || return 1
+	if [[ "${val}" == go-keyring-base64:* ]]; then
+		decoded="$(printf '%s' "${val#go-keyring-base64:}" | /usr/bin/base64 -D 2>/dev/null)" || return 1
+		val="${decoded}"
+	fi
+	[[ -n "${val}" ]] || return 1
+	printf '%s' "${val}"
+}
+
+read_dotenv() {
+	[[ -f "${HOME}/.env" ]] || return 1
+	local val
+	val="$(sed -n "s/^export $1=\"\{0,1\}\([^\"]*\)\"\{0,1\}$/\1/p" "${HOME}/.env" | head -1)"
+	[[ -n "${val}" ]] || return 1
+	printf '%s' "${val}"
+}
+
+resolve() {
+	local name="$1" val
+	# `${!name}` indirect expansion, not `eval`: the value is a credential and
+	# never belongs in a string the shell re-parses.
+	val="${!name:-}"
+	[[ -n "${val}" ]] && { printf '%s' "${val}"; return 0; }
+	val="$(read_keychain "${name}" || true)"
+	[[ -n "${val}" ]] && { printf '%s' "${val}"; return 0; }
+	val="$(read_dotenv "${name}" || true)"
+	[[ -n "${val}" ]] && { printf '%s' "${val}"; return 0; }
+	die "${name} is set in neither the environment, the Keychain nor ~/.env"
+}
+
+token="$(resolve TURBO_TOKEN)"
+api="$(resolve TURBO_API)"
+team="$(resolve TURBO_TEAM)"
+
+roots=("$@")
+# `$#`, not `${#roots[@]}`: under `set -u` bash 3.2 calls an empty array unbound.
+if [[ $# -eq 0 ]]; then
+	roots=("$(pwd)")
+fi
+
+written=0
+missing=0
+for root in "${roots[@]}"; do
+	git -C "${root}" rev-parse --git-dir >/dev/null 2>&1 ||
+		die "${root} is not a git repository"
+
+	# `--porcelain` and the `worktree ` prefix, because the human-readable form
+	# puts the branch on the same line and a bare entry has no branch at all.
+	while IFS= read -r line; do
+		case "${line}" in
+		"worktree "*) ;;
+		*) continue ;;
+		esac
+		wt="${line#worktree }"
+
+		# A bare repository holds no tree to configure, and `git worktree list`
+		# still lists a worktree whose directory has been deleted (`prunable`).
+		[[ -d "${wt}" ]] || {
+			missing=$((missing + 1))
+			continue
+		}
+		[[ -f "${wt}/package.json" ]] || continue
+
+		# Written 0600 through a temp file in the same directory: the token is a
+		# credential, and a half-written config.json is a turbo that cannot parse
+		# its own configuration.
+		(
+			umask 077
+			mkdir -p "${wt}/.turbo"
+			printf '{\n  "token": "%s",\n  "apiurl": "%s",\n  "teamslug": "%s"\n}\n' \
+				"${token}" "${api}" "${team}" > "${wt}/.turbo/config.json.tmp"
+			chmod 600 "${wt}/.turbo/config.json.tmp"
+			mv "${wt}/.turbo/config.json.tmp" "${wt}/.turbo/config.json"
+		)
+		written=$((written + 1))
+	done < <(git -C "${root}" worktree list --porcelain)
+done
+
+printf '%s worktrees configured' "${written}"
+[[ ${missing} -gt 0 ]] && printf ', %s listed but absent on disk' "${missing}"
+printf '\n'

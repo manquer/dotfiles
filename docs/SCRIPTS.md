@@ -239,6 +239,58 @@ herdr server                           # bring the server back on the new versio
 
 ---
 
+### `devcontainer-secrets-push`
+
+**Purpose**: Writes the Keychain secrets plus the non-secret `TURBO_*` pair into a
+devcontainer's `~/.secrets.zsh`, and reinstalls `turbo-remote-cache-seed` there.
+
+**Why it exists**: `/home/node` does not survive `devpod up --recreate` - only the
+`/workspace` bind mount does - so `~/.secrets.zsh` and the `~/.zshenv` that sources
+it are lost on every recreate, silently. Shells still start; `turbo` just stops
+using the remote cache.
+
+```bash
+devcontainer-secrets-push                        # every crusible-dev-*.devpod host in ~/.ssh/config
+devcontainer-secrets-push crusible-dev-4.devpod  # named targets only
+```
+
+Values are read live from the macOS Keychain (service `chezmoi`) and `~/.env` -
+the same two sources `conf.d/{05-env,15-secrets}.zsh` read - and travel on stdin,
+never on argv, which is visible in `ps` on a shared host. `~/.zshenv` is the
+target rather than `~/.zshrc` because a non-interactive `zsh -c`, which is what an
+agent tool call and a `mise` task run, does not source `~/.zshrc`.
+
+Already-running panes and agents keep their frozen environment: turbo is covered
+by the seeded `.turbo/config.json`, everything else needs `source ~/.secrets.zsh`
+in an idle pane or an agent restart.
+
+---
+
+### `turbo-remote-cache-seed`
+
+**Purpose**: Writes `.turbo/config.json` into every worktree of a repository, so the
+Turborepo remote cache is configured by file rather than by environment.
+
+**Why a file**: an environment variable reaches only processes started after it was
+set, and a long-lived agent, a herdr pane or a dev server each froze its copy at
+start. `turbo` re-reads `<worktree>/.turbo/config.json` on every invocation, so a
+process with a stale environment still gets the cache.
+
+```bash
+turbo-remote-cache-seed              # every worktree of the repo in $PWD
+turbo-remote-cache-seed ~/git/repo   # named repository roots
+```
+
+`TURBO_TOKEN`, `TURBO_API` and `TURBO_TEAM` resolve from the environment first,
+then the Keychain, then `~/.env`, so the same script runs on the Mac and inside a
+container. Each file is written `0600` through a temp file in the same directory,
+so no worktree ever sees a half-written config.
+
+This file outranks the environment, which matters when measuring: a "cold" turbo
+number needs `.turbo/config.json` moved aside, not `TURBO_*` unset.
+
+---
+
 ## Script State Management
 
 ### How State is Tracked
