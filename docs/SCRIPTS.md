@@ -8,6 +8,7 @@ Chezmoi supports running scripts as part of the dotfiles application process. Sc
 |------|--------|-----------|
 | **run_once** | `run_once_` | First time only (state tracked) |
 | **run_onchange** | `run_onchange_` | When script content changes (hash-based) |
+| **run** | `run_` | Every apply (no state tracked) |
 
 ## Execution Order
 
@@ -18,6 +19,7 @@ Scripts run in this order:
 3. **File application**
 4. `run_once_after_*` (alphabetically)
 5. `run_onchange_after_*` (alphabetically)
+6. `run_after_*` (alphabetically)
 
 Numbers in filenames (e.g., `00-`, `01-`) control sort order within each phase.
 
@@ -176,6 +178,66 @@ else
     echo "SSH key already exists, skipping..."
 fi
 ```
+
+#### `run_after_pin-herdr.sh.tmpl`
+
+**Purpose**: Keeps the `herdr` binary on the pinned version rather than homebrew-core's latest.
+
+**Runs**: Every apply, after files (macOS only)
+
+**Actions**: Calls `~/.local/bin/herdr-pin`, which is a no-op once the pin is in
+place. homebrew-core ships a single unversioned `herdr` formula, so the pin is
+enforced by pouring the official bottle for the pinned version into the Cellar
+and running `brew pin`.
+
+`herdr-pin` will not relink the binary while herdr workspaces are attached -
+that would kill them - so it reports the swap as deferred and leaves the current
+version in place. Running on every apply (rather than `run_onchange_`) is what
+lets a deferred swap land on the first apply after the servers are stopped.
+
+See [`herdr-pin`](#herdr-pin) below for the command surface and for how to move
+the pin to a new version.
+
+---
+
+## User Binaries (`~/.local/bin`)
+
+Not chezmoi scripts: these are managed files under `dot_local/bin/`, applied to
+`~/.local/bin` (already on `PATH`, see [SHELL.md](SHELL.md)) and run by hand.
+
+### `herdr-pin`
+
+**Purpose**: Holds the local `herdr` client at a known-good version - currently
+**0.9.0** - instead of tracking homebrew-core's latest.
+
+homebrew-core carries a single unversioned `herdr` formula, so brew on its own
+cannot express "stay on 0.9.0". The script pours the official bottle for the
+pinned version out of ghcr into the Cellar, links that keg and pins the formula
+so `brew upgrade` leaves it alone.
+
+```bash
+herdr-pin --status    # installed, linked and pinned state, plus live sessions
+herdr-pin             # enforce the pin; defers while sessions are attached
+herdr-pin --force     # swap now, killing attached sessions
+herdr-pin --release   # drop the pin, return to homebrew-core's latest
+```
+
+Relinking tears down every attached herdr client, so the swap only runs when no
+herdr process is alive. While workspaces are up the script pre-fetches the bottle,
+reports the swap as deferred and exits 0 - which is what makes it safe to call
+from [`run_after_pin-herdr.sh.tmpl`](#run_after_pin-herdrshtmpl) on every apply.
+
+`PINNED_VERSION` at the top of the script is the target, and
+`HERDR_PINNED_VERSION` overrides it for a one-off run. To move the pin:
+
+```bash
+herdr server stop                      # the swap defers while the server is up
+$EDITOR dot_local/bin/executable_herdr-pin   # bump PINNED_VERSION
+chezmoi apply                          # run_after_ hook performs the swap
+herdr server                           # bring the server back on the new version
+```
+
+---
 
 ## Script State Management
 

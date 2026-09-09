@@ -1,0 +1,16 @@
+#!/bin/bash
+{{ if .machine.isDarwin }}
+set -euo pipefail
+
+# herdr is held at a known-good version instead of tracking homebrew-core's
+# latest. ~/.local/bin/herdr-pin owns that and is a no-op once the pin is in
+# place, so this is cheap to run every apply.
+#
+# It also refuses to relink the binary while herdr workspaces are attached -
+# that would kill them - and reports the swap as deferred instead. Running on
+# every apply (rather than run_onchange) is what lets the swap land on the
+# first apply after the servers are stopped.
+if [[ -x "${HOME}/.local/bin/herdr-pin" ]]; then
+    "${HOME}/.local/bin/herdr-pin" || echo "herdr-pin failed; leaving herdr as-is" >&2
+fi
+{{ end }}

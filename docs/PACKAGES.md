@@ -35,7 +35,7 @@ Complete list of packages, tools, and applications installed by this dotfiles se
 | `fish` | Friendly interactive shell |
 | `tmux` | Terminal multiplexer |
 | `zellij` | Modern terminal multiplexer |
-| `herdr` | Agent multiplexer in the terminal |
+| `herdr` | Agent multiplexer in the terminal (held at 0.9.0 by `herdr-pin`, see [Scripts](SCRIPTS.md)) |
 | `starship` | Cross-shell prompt |
 | `atuin` | Shell history sync |
 

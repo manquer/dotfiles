@@ -1,0 +1,233 @@
+#!/usr/bin/env bash
+#
+# herdr-pin - hold the local herdr client at a known-good version.
+#
+# homebrew-core carries a single unversioned herdr formula, so brew on its own
+# cannot express "stay on 0.9.0": every `brew upgrade` walks the binary forward.
+# This pours the official 0.9.0 bottle out of ghcr into the Cellar, links that
+# keg, and pins the formula so brew leaves it alone from then on.
+#
+# Relinking tears down every attached herdr client, so the swap only runs
+# when no herdr process is alive. While workspaces are up the script reports
+# what it would do and exits 0, so it is safe to call from a dotfiles apply -
+# the next run after the servers are stopped does the swap.
+#
+#   herdr-pin            enforce the pin; defer the swap while sessions are live
+#   herdr-pin --status   report installed, linked and pinned state
+#   herdr-pin --force    swap now, even with sessions attached
+#   herdr-pin --release  drop the pin and return to homebrew-core's latest
+
+set -euo pipefail
+
+PINNED_VERSION="${HERDR_PINNED_VERSION:-0.9.0}"
+GHCR_REPO="homebrew/core/herdr"
+CACHE_DIR="${XDG_CACHE_HOME:-${HOME}/.cache}/herdr-pin"
+BOTTLE_PATH=""
+
+note() { printf 'herdr-pin: %s\n' "$*"; }
+warn() { printf 'herdr-pin: %s\n' "$*" >&2; }
+die() { warn "$*"; exit 1; }
+
+resolve_brew() {
+    if [[ -x /opt/homebrew/bin/brew ]]; then
+        BREW=/opt/homebrew/bin/brew
+    elif [[ -x /usr/local/bin/brew ]]; then
+        BREW=/usr/local/bin/brew
+    elif command -v brew >/dev/null 2>&1; then
+        BREW=$(command -v brew)
+    else
+        die "brew not found; nothing to pin"
+    fi
+    BREW_PREFIX=$("$BREW" --prefix)
+}
+
+# The version brew currently has linked into the prefix, empty if none.
+linked_version() {
+    local opt="${BREW_PREFIX}/opt/herdr"
+    [[ -L $opt ]] || return 0
+    basename "$(readlink "$opt")"
+}
+
+installed_kegs() {
+    local cellar="${BREW_PREFIX}/Cellar/herdr"
+    [[ -d $cellar ]] || return 0
+    find "$cellar" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort -V
+}
+
+is_pinned() { "$BREW" list --pinned 2>/dev/null | grep -qx herdr; }
+
+# Clients and servers both run as plain `herdr`, so an exact name match covers
+# an attached workspace, a `--remote` client and a `herdr server` alike.
+live_sessions() { pgrep -x herdr 2>/dev/null || true; }
+
+session_count() { live_sessions | grep -c . || true; }
+
+bottle_tag() { "$BREW" ruby -e 'puts Utils::Bottles.tag' 2>/dev/null | tail -1; }
+
+# Resolve the bottle for $1 out of ghcr into $CACHE_DIR, reusing a cached copy
+# whose checksum still matches the published digest. Sets BOTTLE_PATH.
+fetch_bottle() {
+    local version=$1 tag token digest path
+
+    command -v jq >/dev/null 2>&1 || die "jq is required to resolve the bottle digest"
+
+    tag=$(bottle_tag)
+    [[ -n $tag ]] || die "could not determine this machine's bottle tag"
+    path="${CACHE_DIR}/herdr-${version}.${tag}.bottle.tar.gz"
+
+    token=$(curl -fsS "https://ghcr.io/token?service=ghcr.io&scope=repository:${GHCR_REPO}:pull" | jq -r '.token')
+    [[ -n $token && $token != null ]] || die "could not get an anonymous ghcr token"
+
+    digest=$(curl -fsS -H "Authorization: Bearer ${token}" \
+        -H 'Accept: application/vnd.oci.image.index.v1+json' \
+        "https://ghcr.io/v2/${GHCR_REPO}/manifests/${version}" |
+        jq -r --arg ref "${version}.${tag}" '
+            .manifests[]
+            | select(.annotations["org.opencontainers.image.ref.name"] == $ref)
+            | .annotations["sh.brew.bottle.digest"]')
+    [[ -n $digest && $digest != null ]] || die "no ${tag} bottle published for herdr ${version}"
+
+    if [[ -f $path ]] && [[ $(shasum -a 256 "$path" | awk '{print $1}') == "$digest" ]]; then
+        note "using cached bottle ${path##*/}"
+    else
+        mkdir -p "$CACHE_DIR"
+        note "downloading herdr ${version} (${tag}) bottle"
+        curl -fsSL -H "Authorization: Bearer ${token}" \
+            "https://ghcr.io/v2/${GHCR_REPO}/blobs/sha256:${digest}" -o "${path}.part"
+        [[ $(shasum -a 256 "${path}.part" | awk '{print $1}') == "$digest" ]] ||
+            { rm -f "${path}.part"; die "bottle checksum mismatch for herdr ${version}"; }
+        mv "${path}.part" "$path"
+    fi
+
+    BOTTLE_PATH=$path
+}
+
+# A poured keg carries a receipt; without one brew treats it as unrequested and
+# `brew autoremove` is free to delete it.
+write_receipt() {
+    local keg=$1 version=$2
+    jq -n \
+        --arg version "$version" \
+        --arg brew_version "$("$BREW" --version | awk 'NR==1{print $2}')" \
+        --arg arch "$(uname -m)" \
+        --argjson time "$(date +%s)" \
+        '{
+            homebrew_version: $brew_version,
+            used_options: [], unused_options: [],
+            built_as_bottle: true, poured_from_bottle: true,
+            installed_as_dependency: false, installed_on_request: true,
+            time: $time, aliases: [], runtime_dependencies: [],
+            source: {
+                spec: "stable",
+                versions: { stable: $version, head: null, version_scheme: 0, compatibility_version: null },
+                tap: "homebrew/core"
+            },
+            arch: $arch
+        }' >"${keg}/INSTALL_RECEIPT.json"
+}
+
+ensure_pin() {
+    if is_pinned; then
+        return 0
+    fi
+    "$BREW" pin herdr
+    note "pinned herdr so brew upgrade skips it"
+}
+
+# Replace whatever is installed with the pinned version. Destructive by nature:
+# callers check for live sessions first.
+swap_to_pinned() {
+    local keg="${BREW_PREFIX}/Cellar/herdr/${PINNED_VERSION}"
+
+    fetch_bottle "$PINNED_VERSION"
+
+    if is_pinned; then
+        "$BREW" unpin herdr
+    fi
+
+    if [[ -n $(installed_kegs) ]]; then
+        note "removing $(installed_kegs | tr '\n' ' ')"
+        "$BREW" uninstall --ignore-dependencies herdr
+    fi
+
+    note "pouring herdr ${PINNED_VERSION} into the Cellar"
+    mkdir -p "${BREW_PREFIX}/Cellar"
+    tar -xzf "$BOTTLE_PATH" -C "${BREW_PREFIX}/Cellar"
+    [[ -x "${keg}/bin/herdr" ]] || die "bottle did not unpack a herdr binary at ${keg}"
+    write_receipt "$keg" "$PINNED_VERSION"
+
+    "$BREW" link --overwrite herdr >/dev/null
+    ensure_pin
+
+    local got
+    got=$("${BREW_PREFIX}/bin/herdr" --version 2>/dev/null | awk '{print $NF}')
+    [[ $got == "$PINNED_VERSION" ]] || die "expected herdr ${PINNED_VERSION} on PATH, got '${got:-nothing}'"
+    note "herdr is now ${PINNED_VERSION}, pinned"
+}
+
+cmd_status() {
+    local linked count
+    linked=$(linked_version)
+    count=$(session_count)
+    printf 'pinned target : %s\n' "$PINNED_VERSION"
+    printf 'linked        : %s\n' "${linked:-none}"
+    printf 'installed     : %s\n' "$(installed_kegs | tr '\n' ' ' | sed 's/ $//;s/^$/none/')"
+    printf 'brew pin      : %s\n' "$(is_pinned && echo yes || echo no)"
+    printf 'live sessions : %s\n' "$count"
+    printf 'cached bottle : %s\n' "$(find "$CACHE_DIR" -maxdepth 1 -name 'herdr-*.tar.gz' -exec basename {} \; 2>/dev/null | tr '\n' ' ' | sed 's/ $//;s/^$/none/')"
+}
+
+cmd_enforce() {
+    local force=${1:-no} linked count
+    linked=$(linked_version)
+
+    if [[ $linked == "$PINNED_VERSION" ]]; then
+        ensure_pin
+        note "held at ${PINNED_VERSION}"
+        return 0
+    fi
+
+    count=$(session_count)
+    if [[ $count -gt 0 && $force != force ]]; then
+        # Hold the line where it is so nothing moves further while we wait, and
+        # warm the cache so the eventual swap needs no network.
+        ensure_pin
+        if ! compgen -G "${CACHE_DIR}/herdr-${PINNED_VERSION}."'*' >/dev/null; then
+            ( fetch_bottle "$PINNED_VERSION" ) || warn "could not pre-fetch the ${PINNED_VERSION} bottle; the swap will download it later"
+        fi
+        note "deferred: ${count} herdr process(es) attached, ${linked:-nothing} still linked"
+        note "run 'herdr-pin' again once the servers are stopped, or --force to swap now"
+        return 0
+    fi
+
+    swap_to_pinned
+}
+
+cmd_release() {
+    local count
+    count=$(session_count)
+    if [[ $count -gt 0 ]]; then
+        die "${count} herdr process(es) attached; stop them before releasing the pin"
+    fi
+    if is_pinned; then
+        "$BREW" unpin herdr
+    fi
+    note "unpinned; reinstalling homebrew-core's current herdr"
+    "$BREW" uninstall --ignore-dependencies herdr 2>/dev/null || true
+    "$BREW" install herdr
+    note "restore the 'brew \"herdr\"' line in the Brewfile so applies keep it installed"
+}
+
+main() {
+    resolve_brew
+    case "${1:-}" in
+        ""|--enforce) cmd_enforce ;;
+        --force) cmd_enforce force ;;
+        --status) cmd_status ;;
+        --release) cmd_release ;;
+        -h|--help) sed -n '3,20p' "$0" | sed 's/^# \{0,1\}//' ;;
+        *) die "unknown argument '$1' (see --help)" ;;
+    esac
+}
+
+main "$@"
