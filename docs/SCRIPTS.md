@@ -198,6 +198,21 @@ lets a deferred swap land on the first apply after the servers are stopped.
 See [`herdr-pin`](#herdr-pin) below for the command surface and for how to move
 the pin to a new version.
 
+#### `run_onchange_after_install-blender-extensions.sh.tmpl`
+
+**Purpose**: Installs and enables the Grease Pencil extensions from
+extensions.blender.org used for 2D animation.
+
+**Runs**: When the extension list changes (macOS with a GUI only)
+
+**Actions**: Asks Blender which of the listed extensions are missing and installs
+only those with `blender --online-mode --command extension install --sync --enable`.
+Passing an already-installed id makes that command exit non-zero, which is why the
+script filters first. Skips cleanly when Blender is not installed.
+
+To add an extension, append its id to `EXTENSIONS`. Ids are case-sensitive
+(`Coloraide`); `blender --command extension list` prints them.
+
 ---
 
 ## User Binaries (`~/.local/bin`)

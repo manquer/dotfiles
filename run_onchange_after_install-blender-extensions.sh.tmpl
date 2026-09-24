@@ -1,0 +1,48 @@
+{{ if and .machine.isDarwin .machine.hasGui -}}
+#!/bin/bash
+
+set -eufo pipefail
+
+# Grease Pencil extensions from extensions.blender.org, installed and enabled.
+# Reruns automatically whenever this list changes. Ids are case-sensitive:
+# `blender --command extension list` prints them.
+EXTENSIONS=(
+    grease_pencil_tools       # box deform, canvas rotate, viewport scrub, layer navigator
+    gp_tween                  # non-destructive in-betweening
+    greasepencil_nudge_frames # change exposure in the dopesheet with D/F
+    storytools                # storyboard camera and layer tools
+    toothpaste                # paste/import SVG as Grease Pencil
+    io_lottie_export          # Grease Pencil to Lottie / dotLottie
+    Coloraide                 # palette and colour picking
+    frame_by_plane            # image sequences on planes for 2.5D
+)
+
+if command -v blender &> /dev/null; then
+    BLENDER="blender"
+elif [[ -x /Applications/Blender.app/Contents/MacOS/Blender ]]; then
+    BLENDER="/Applications/Blender.app/Contents/MacOS/Blender"
+else
+    echo "Blender not found, skipping Blender extension install."
+    exit 0
+fi
+
+# `extension install` exits non-zero when every named package is already
+# installed, so only pass the missing ones.
+installed="$("$BLENDER" --online-mode --command extension list --sync 2>/dev/null \
+    | sed -n 's/^  \([^ :]*\) \[installed\].*/\1/p')"
+
+missing=()
+for ext in "${EXTENSIONS[@]}"; do
+    grep -qxF "$ext" <<< "$installed" || missing+=("$ext")
+done
+
+if [[ ${#missing[@]} -eq 0 ]]; then
+    echo "Blender extensions already installed."
+    exit 0
+fi
+
+echo "Installing Blender extensions: ${missing[*]}"
+"$BLENDER" --online-mode --command extension install --sync --enable \
+    "$(IFS=,; echo "${missing[*]}")"
+echo "Blender extensions installed successfully."
+{{ end -}}
