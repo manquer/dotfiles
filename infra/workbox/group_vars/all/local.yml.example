@@ -1,0 +1,7 @@
+# Copy to local.yml (gitignored) and fill in. Ansible loads every file in
+# group_vars/all/, so nothing else needs to reference it.
+
+# Addresses fail2ban must never ban — typically your current public IP
+# (`curl -s https://api.ipify.org`).
+fail2ban_ignoreip_extra:
+  - 203.0.113.10

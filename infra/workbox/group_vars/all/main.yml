@@ -1,0 +1,53 @@
+# Shared by every workbox-class host. Personal values (your IP) go in the
+# untracked group_vars/all/local.yml — copy local.yml.example.
+
+admin_user: mani
+admin_shell: /usr/bin/zsh
+# bootstrap.yml installs this as the admin user's only key. It is the key
+# Hetzner's Robot put on root at provisioning time.
+admin_authorized_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+host_timezone: UTC
+
+# ---------------------------------------------------------------------------
+# devsec.hardening.os_hardening — overrides that keep parity with workbox,
+# which was hardened by an older release of the role.
+# ---------------------------------------------------------------------------
+# 2 blocks non-root strace/gdb, which CI jobs and debugging both need.
+sysctl_overwrite:
+  kernel.yama.ptrace_scope: 1
+  # The role writes AND APPLIES ip_forward=0. On a running Docker host that
+  # cuts every container's egress at once (workbox, 2026-09-14: all runner
+  # pools hung at registration). Every workbox-class host runs Docker.
+  net.ipv4.ip_forward: 1
+os_auth_pw_max_age: 90
+# The role's own template writes `dispatcher = /sbin/audispd` and `disp_qos`,
+# both removed from modern audit (warnings on every ausearch), and its default
+# `keep_logs` never deletes anything. Ours rotates 10 x 50 MB.
+os_auditd_template: "{{ playbook_dir }}/../roles/auditd/templates/auditd.conf.j2"
+os_auditd_max_log_file: 50
+os_auditd_num_logs: 10
+os_auditd_max_log_file_action: rotate
+
+# ---------------------------------------------------------------------------
+# sshd
+# ---------------------------------------------------------------------------
+# Env var NAMES accepted from SendEnv (values never leave the client config).
+sshd_accept_env: []
+
+# ---------------------------------------------------------------------------
+# Firewall (nftables, table `inet host`). Off unless a group turns it on: on a
+# devcontainer host it would need care around published ports first.
+# ---------------------------------------------------------------------------
+firewall_enabled: false
+firewall_wan_iface: "{{ ansible_default_ipv4.interface }}"
+# Drop new inbound connections from the internet to Docker-published ports.
+firewall_block_published_ports: true
+
+# ---------------------------------------------------------------------------
+# fail2ban
+# ---------------------------------------------------------------------------
+fail2ban_ignoreip_extra: []
+fail2ban_maxretry: 5
+fail2ban_findtime: 10m
+fail2ban_bantime: 1h
+fail2ban_bantime_maxtime: 1w

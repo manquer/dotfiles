@@ -1,0 +1,56 @@
+# workbox2: CI runners only. Nothing is published to the internet but SSH.
+firewall_enabled: true
+
+# Deploy checkouts, secrets and the ghcr.io login are copied host-to-host from
+# here (no GitHub credentials live on the CI box). See roles/ci_runners.
+runner_source_host: workbox
+
+# Instance numbers start at 101. Runner names are `<pool>-runner-<N>`, so
+# reusing workbox's 1..N would make GitHub hand workbox's registrations to this
+# box. Expect more crusible load than talview load (owner, 2026-10-05).
+runner_pools:
+  - name: crusible-runner
+    home: /home/{{ admin_user }}/gh-runners
+    checkout: /home/{{ admin_user }}/gh-runners/deploy
+    ops_subdir: ops/ci-runners
+    # The checkout on workbox is a git worktree whose .git points at a bare
+    # repo there; copy the tree only.
+    sync_git: false
+    units:
+      - crusible-runner@.service
+      - crusible-browser-pool.service
+      - crusible-reconcile.service
+      - crusible-reconcile.timer
+    services:
+      - crusible-browser-pool.service
+      - crusible-reconcile.timer
+    dropins:
+      # Template-wide on workbox too: keep the registration across jobs and
+      # retire after RUNNER_MAX_JOBS (docker-compose.persistent.yml).
+      - name: persistent.conf
+        content: |
+          [Service]
+          Environment=RUNNER_PERSISTENT=1
+    pool_env_extra: |
+      # DX-0006-20 browser pool. A slot is one lane's worth of browsers.
+      BROWSER_POOL_CAPACITY=25
+      BROWSER_POOL_RESERVED=1
+    instances: "{{ range(101, 121) | list }}"
+
+  - name: supergraph-ci-runner
+    home: /home/{{ admin_user }}/gh-runners-supergraph
+    checkout: /home/{{ admin_user }}/supergraph-ci-deploy
+    ops_subdir: infra/ops/ci-runners
+    sync_git: true
+    units:
+      - supergraph-ci-runner@.service
+    instances: "{{ range(101, 106) | list }}"
+
+  - name: webclients-ci-runner
+    home: /home/{{ admin_user }}/gh-runners-webclients
+    checkout: /home/{{ admin_user }}/webclients-ci-deploy
+    ops_subdir: dx/ops/ci-runners
+    sync_git: true
+    units:
+      - webclients-ci-runner@.service
+    instances: "{{ range(101, 106) | list }}"

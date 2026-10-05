@@ -1,0 +1,180 @@
+# Runner pools, installed the way each repository's own run-book installs
+# them: unit files come FROM THE DEPLOY CHECKOUT (byte-identical to what the
+# repos ship), and only the host-specific values — pool.env and the User=
+# drop-in — are written here. Instance numbers come from runner_pools.
+
+- name: Runner state directories
+  ansible.builtin.file:
+    path: "{{ item.0.home }}/{{ item.1.dir }}"
+    state: directory
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "{{ item.1.mode }}"
+  loop: "{{ runner_pools | product([{'dir': '', 'mode': '0755'}, {'dir': 'secrets', 'mode': '0700'}, {'dir': 'work', 'mode': '0750'}]) | list }}"
+  loop_control:
+    label: "{{ item.0.home }}/{{ item.1.dir }}"
+
+- name: Copy checkouts, secrets and registry login from the source host
+  ansible.builtin.include_tasks: sync.yml
+  when: runner_sync | bool and runner_source_host | length > 0 and not ansible_check_mode
+
+- name: Pool config directories
+  ansible.builtin.file:
+    path: "/etc/{{ pool.name }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop: "{{ runner_pools }}"
+  loop_control:
+    loop_var: pool
+    label: "{{ pool.name }}"
+
+- name: pool.env (RUNNER_HOME, OPS_DIR and pool extras)
+  ansible.builtin.template:
+    src: pool.env.j2
+    dest: "/etc/{{ pool.name }}/pool.env"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ runner_pools }}"
+  loop_control:
+    loop_var: pool
+    label: "{{ pool.name }}"
+  notify: Restart runner pools
+
+- name: Unit files from the deploy checkout
+  ansible.builtin.copy:
+    src: "{{ item.0.checkout }}/{{ item.0.ops_subdir }}/{{ item.1 }}"
+    dest: "/etc/systemd/system/{{ item.1 }}"
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ runner_pools | subelements('units') }}"
+  loop_control:
+    label: "{{ item.1 }}"
+  notify: Reload systemd
+
+- name: Drop-in directories
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ pool.name }}@.service.d"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop: "{{ runner_pools }}"
+  loop_control:
+    loop_var: pool
+    label: "{{ pool.name }}"
+
+# systemd expands ${VAR} in ExecStart but not in User=/Group=, and the units
+# deliberately carry no default (root would be a silent privilege change).
+- name: host.conf drop-in (User=/Group=)
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ pool.name }}@.service.d/host.conf"
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by infra/workbox (roles/ci_runners) in the dotfiles repo.
+      # systemd expands ${VAR} in ExecStart but NOT in User=/Group=, so these
+      # cannot come from pool.env. The unit supplies no default on purpose.
+      [Service]
+      User={{ admin_user }}
+      Group={{ admin_user }}
+  loop: "{{ runner_pools }}"
+  loop_control:
+    loop_var: pool
+    label: "{{ pool.name }}"
+  notify: Reload systemd
+
+- name: Pool-specific drop-ins
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ item.0.name }}@.service.d/{{ item.1.name }}"
+    content: "{{ item.1.content }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ runner_pools | subelements('dropins', skip_missing=true) }}"
+  loop_control:
+    label: "{{ item.0.name }}@.service.d/{{ item.1.name }}"
+  notify: Reload systemd
+
+- name: Flush systemd reloads before starting anything
+  ansible.builtin.meta: flush_handlers
+
+# Images are tens of GB; pulling here keeps the first unit start from timing
+# out mid-pull. `pull` is a no-op when the pinned digest is already present.
+- name: Pull pool images
+  ansible.builtin.command: >-
+    docker compose -f {{ pool.checkout }}/{{ pool.ops_subdir }}/docker-compose.yml pull --quiet
+  environment:
+    RUNNER_HOME: "{{ pool.home }}"
+    OPS_DIR: "{{ pool.checkout }}/{{ pool.ops_subdir }}"
+  become: true
+  become_user: "{{ admin_user }}"
+  changed_when: false
+  when: not ansible_check_mode
+  loop: "{{ runner_pools }}"
+  loop_control:
+    loop_var: pool
+    label: "{{ pool.name }}"
+
+- name: Pool services (browser pool, reconcile timer, ...)
+  ansible.builtin.systemd_service:
+    name: "{{ item.1 }}"
+    enabled: true
+    state: started
+  loop: "{{ runner_pools | subelements('services', skip_missing=true) }}"
+  loop_control:
+    label: "{{ item.1 }}"
+
+- name: Runner instances
+  ansible.builtin.systemd_service:
+    name: "{{ item.0.name }}@{{ item.1 }}.service"
+    enabled: true
+    state: started
+  loop: "{{ runner_pools | subelements('instances') }}"
+  loop_control:
+    label: "{{ item.0.name }}@{{ item.1 }}"
+
+- name: Instances systemd knows about, per pool
+  ansible.builtin.shell: |
+    set -o pipefail
+    systemctl list-units '{{ pool.name }}@*' --no-legend --plain --all |
+      awk '{print $1}' | sed -E 's/^.*@([0-9]+)\.service$/\1/' | grep -E '^[0-9]+$' || true
+  args:
+    executable: /bin/bash
+  register: runner_known
+  changed_when: false
+  check_mode: false
+  loop: "{{ runner_pools }}"
+  loop_control:
+    loop_var: pool
+    label: "{{ pool.name }}"
+
+- name: Instances running but no longer listed
+  ansible.builtin.set_fact:
+    runner_extra_units: >-
+      {{ (runner_extra_units | default([])) +
+         (r.stdout_lines | map('int') | difference(r.pool.instances | map('int'))
+          | map('string') | map('regex_replace', '^', r.pool.name ~ '@')
+          | map('regex_replace', '$', '.service') | list) }}
+  loop: "{{ runner_known.results }}"
+  loop_control:
+    loop_var: r
+    label: "{{ r.pool.name }}"
+
+- name: Report unlisted instances (re-run with -e runner_prune=true to stop them)
+  ansible.builtin.debug:
+    msg: "Not in runner_pools but known to systemd: {{ runner_extra_units | join(', ') }}"
+  when: runner_extra_units | length > 0 and not runner_prune | bool
+
+- name: Stop and disable unlisted instances
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: false
+    state: stopped
+  loop: "{{ runner_extra_units }}"
+  when: runner_prune | bool

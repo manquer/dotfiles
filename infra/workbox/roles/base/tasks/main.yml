@@ -1,0 +1,29 @@
+- name: Base packages
+  community.general.pacman:
+    name: [zsh, git, rsync, jq, python-systemd, mosh]
+    state: present
+
+- name: Timezone (pool schedules and logs are read in UTC)
+  community.general.timezone:
+    name: "{{ host_timezone }}"
+
+- name: Hostname
+  ansible.builtin.hostname:
+    name: "{{ host_hostname }}"
+    use: systemd
+  when: host_hostname is defined
+
+- name: Admin user login shell
+  ansible.builtin.user:
+    name: "{{ admin_user }}"
+    shell: "{{ admin_shell }}"
+
+# An absent ~/.zshrc drops zsh into its interactive new-user wizard on login.
+- name: Admin user has a .zshrc
+  ansible.builtin.copy:
+    dest: "/home/{{ admin_user }}/.zshrc"
+    content: ""
+    force: false
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "0644"

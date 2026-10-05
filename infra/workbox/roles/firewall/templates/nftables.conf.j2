@@ -1,0 +1,47 @@
+#!/usr/bin/nft -f
+# {{ ansible_managed }}
+#
+# THIS FILE OWNS ONE TABLE, `inet host`, AND NOTHING ELSE. Arch's stock
+# nftables.conf starts with `flush ruleset`, which would also wipe the tables
+# Docker writes through iptables-nft (`ip nat`, `ip filter`) and cut every
+# container's egress until dockerd restarts. `destroy table` makes a reload
+# idempotent without touching anyone else's rules. fail2ban keeps its own
+# `f2b-table`, also untouched.
+
+destroy table inet host
+
+table inet host {
+	chain input {
+		type filter hook input priority filter; policy drop;
+
+		ct state established,related accept
+		ct state invalid drop
+		iif "lo" accept
+
+		# Containers talking to the host (anything bound on a bridge gateway).
+		iifname { "docker0", "br-*" } accept
+
+		meta l4proto icmp icmp type { echo-request, destination-unreachable, time-exceeded, parameter-problem } limit rate 20/second accept
+		meta l4proto ipv6-icmp accept
+
+		# SSH (IPv4-only: AddressFamily inet) and mosh are the only public services.
+		tcp dport 22 accept
+
+		# mosh: one UDP port per session, allocated from mosh-server's default
+		# range. Authentication still happens over SSH first.
+		udp dport 60000-61000 accept
+
+		counter drop
+	}
+{% if firewall_block_published_ports %}
+
+	# Docker publishes ports through DNAT + FORWARD, which the input chain never
+	# sees. This host publishes nothing on purpose, so a new inbound connection
+	# from the internet to a published container port drops here. (Every base
+	# chain on a hook must accept, so Docker's own accept cannot override it.)
+	chain forward {
+		type filter hook forward priority filter; policy accept;
+		iifname "{{ firewall_wan_iface }}" ct state new ct status dnat counter drop
+	}
+{% endif %}
+}

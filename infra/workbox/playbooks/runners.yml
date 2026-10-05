@@ -1,0 +1,11 @@
+# Runner pools only (also imported by site.yml). Re-run to resize a pool
+# (group_vars/workbox_ci.yml) or to pull deploy-checkout updates from the
+# source host:
+#
+#   ansible-playbook playbooks/runners.yml -l workbox2
+#   ansible-playbook playbooks/runners.yml -l workbox2 -e runner_prune=true   # also stop instances no longer listed
+- name: CI runner pools
+  hosts: workbox_ci
+  become: true
+  roles:
+    - ci_runners

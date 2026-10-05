@@ -1,0 +1,35 @@
+# files/sshd_config is workbox's hand-hardened config, verbatim: key-only,
+# no root, no forwarding, IPv4 only, modern ciphers, MaxAuthTries 3.
+- name: Hardened sshd_config
+  ansible.builtin.copy:
+    src: sshd_config
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+    validate: /usr/bin/sshd -t -f %s
+  notify: Reload sshd
+
+- name: AcceptEnv drop-in (names forwarded by the client's SendEnv)
+  ansible.builtin.template:
+    src: 10-accept-env.conf.j2
+    dest: /etc/ssh/sshd_config.d/10-accept-env.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: sshd_accept_env | length > 0
+  notify: Reload sshd
+
+- name: No AcceptEnv drop-in where nothing is forwarded
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d/10-accept-env.conf
+    state: absent
+  when: sshd_accept_env | length == 0
+  notify: Reload sshd
+
+- name: sshd enabled
+  ansible.builtin.systemd_service:
+    name: sshd
+    enabled: true
+    state: started

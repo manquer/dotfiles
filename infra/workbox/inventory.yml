@@ -1,0 +1,14 @@
+# Hosts are SSH aliases, never addresses: this repository is public. HostName,
+# User and keys live in the untracked ~/.namespace/ssh/personal-hosts.ssh.
+#
+#   workbox    dev box: devcontainers + the original runner pools (1..N)
+#   workbox2   CI-only box: runner pools offset to 101+ (hostname workbox-ci)
+all:
+  children:
+    workbox_dev:
+      hosts:
+        workbox:
+    workbox_ci:
+      hosts:
+        workbox2:
+          host_hostname: workbox-ci

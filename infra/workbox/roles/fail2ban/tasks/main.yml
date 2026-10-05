@@ -1,0 +1,27 @@
+# python-systemd: the systemd backend reads sshd from the journal; without it
+# fail2ban starts and silently watches nothing.
+- name: fail2ban packages
+  community.general.pacman:
+    name: [fail2ban, python-systemd]
+    state: present
+
+- name: jail.local
+  ansible.builtin.template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart fail2ban
+
+- name: fail2ban accepts the whole configuration
+  ansible.builtin.command: fail2ban-client -t
+  changed_when: false
+  check_mode: false
+  when: not ansible_check_mode
+
+- name: fail2ban enabled
+  ansible.builtin.systemd_service:
+    name: fail2ban
+    enabled: true
+    state: started

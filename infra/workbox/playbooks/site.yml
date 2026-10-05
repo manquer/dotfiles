@@ -1,0 +1,33 @@
+# Converge a workbox-class host: hardening, SSH, Docker, firewall, fail2ban,
+# auditd — then the runner pools on the CI group.
+#
+#   ansible-playbook playbooks/site.yml -l workbox2 --check --diff
+#   ansible-playbook playbooks/site.yml -l workbox2
+#
+# workbox (dev) is in the inventory so it can be rebuilt the same way, but it
+# carries live devcontainers: always --check --diff it first (README §workbox).
+- name: Harden and configure
+  hosts: all
+  become: true
+  pre_tasks:
+    # sshd below disables root login. Running as root would lock this very
+    # connection's successors out with no admin user to fall back to.
+    - name: Refuse to run as root (bootstrap.yml creates the admin user)
+      ansible.builtin.command: whoami
+      become: false
+      register: site_whoami
+      changed_when: false
+      check_mode: false
+      failed_when: site_whoami.stdout == 'root'
+  roles:
+    - base
+    - devsec.hardening.os_hardening
+    - sshd
+    - docker
+    - role: firewall
+      when: firewall_enabled | bool
+    - fail2ban
+    - auditd
+
+- name: CI runner pools
+  ansible.builtin.import_playbook: runners.yml

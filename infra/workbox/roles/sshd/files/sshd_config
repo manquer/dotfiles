@@ -1,0 +1,185 @@
+# Hardened SSH Server Configuration
+# This configuration follows security best practices to prevent unauthorized access
+
+# Include drop-in configurations
+Include /etc/ssh/sshd_config.d/*.conf
+
+# Network Configuration
+Port 22
+AddressFamily inet
+Protocol 2
+
+# Host Keys - Use only modern, secure keys (disable weak RSA, keep only strong ones)
+HostKey /etc/ssh/ssh_host_ed25519_key
+HostKey /etc/ssh/ssh_host_rsa_key
+
+# Ciphers and Keying - Use only strong, modern ciphers
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
+KexAlgorithms sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512
+#KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group-exchange-sha256
+RekeyLimit 512M 1h
+
+# Logging - Enhanced for security auditing
+SyslogFacility AUTH
+LogLevel VERBOSE
+
+# ============================================
+# Authentication Configuration
+# ============================================
+
+# Reduce login grace time to prevent connection holding
+LoginGraceTime 30s
+
+# CRITICAL: Completely disable root login
+PermitRootLogin no
+
+# Enable strict mode checks on user files and directories
+StrictModes yes
+
+# Limit authentication attempts to prevent brute force
+MaxAuthTries 3
+
+# Limit concurrent sessions per connection
+MaxSessions 5
+
+# ============================================
+# Public Key Authentication (ONLY METHOD ALLOWED)
+# ============================================
+
+# Enable public key authentication
+PubkeyAuthentication yes
+
+# Location of authorized keys
+AuthorizedKeysFile .ssh/authorized_keys
+
+# ============================================
+# Disable ALL Password-Based Authentication
+# ============================================
+
+# Disable password authentication completely
+PasswordAuthentication no
+
+# Never allow empty passwords
+PermitEmptyPasswords no
+
+# Disable challenge-response authentication
+ChallengeResponseAuthentication no
+
+# Disable keyboard-interactive authentication
+KbdInteractiveAuthentication no
+
+# ============================================
+# Disable Host-Based Authentication
+# ============================================
+
+HostbasedAuthentication no
+IgnoreUserKnownHosts yes
+IgnoreRhosts yes
+
+# ============================================
+# Disable Kerberos Authentication
+# ============================================
+
+KerberosAuthentication no
+KerberosOrLocalPasswd no
+KerberosTicketCleanup yes
+
+# ============================================
+# Disable GSSAPI Authentication
+# ============================================
+
+GSSAPIAuthentication no
+GSSAPICleanupCredentials yes
+
+# ============================================
+# PAM Configuration
+# ============================================
+
+# Use PAM for account and session checks only (not authentication)
+UsePAM yes
+
+# ============================================
+# Disable Forwarding and Tunneling
+# ============================================
+
+# Disable agent forwarding to prevent credential theft
+AllowAgentForwarding no
+
+# Disable TCP forwarding to prevent SSH tunneling
+AllowTcpForwarding no
+
+# Disable gateway ports
+GatewayPorts no
+
+# Disable X11 forwarding to prevent X11 attacks
+X11Forwarding no
+
+# Disable tunnel device forwarding
+PermitTunnel no
+
+# ============================================
+# Session Configuration
+# ============================================
+
+# Allow TTY allocation for interactive sessions
+PermitTTY yes
+
+# Display message of the day
+PrintMotd yes
+
+
+# ============================================
+# Connection Management
+# ============================================
+
+# Keep connections alive and detect dead connections
+TCPKeepAlive yes
+
+# Send keep-alive messages every 5 minutes
+ClientAliveInterval 300
+
+# Disconnect after 2 missed keep-alive messages (10 minutes total)
+ClientAliveCountMax 2
+
+# ============================================
+# Other Security Settings
+# ============================================
+
+# Don't allow users to set environment variables
+PermitUserEnvironment no
+
+# Disable compression to prevent CRIME-like attacks
+Compression no
+
+# Enable DNS lookups for logging (helps with forensics)
+UseDNS yes
+
+# Limit concurrent unauthenticated connections
+MaxStartups 10:30:60
+
+# ============================================
+# Login Banner (Optional)
+# ============================================
+
+# Display a warning banner before login
+# Create /etc/ssh/banner.txt with your legal warning
+# Banner /etc/ssh/banner.txt
+
+# ============================================
+# SFTP Subsystem
+# ============================================
+
+# Override default of no subsystems
+Subsystem sftp /usr/lib/ssh/sftp-server
+
+# ============================================
+# Per-User Overrides (Optional)
+# ============================================
+
+# Example: Restrict specific users further
+# Match User restricteduser
+#     AllowTcpForwarding no
+#     X11Forwarding no
+#     PermitTTY no
+#     ForceCommand internal-sftp

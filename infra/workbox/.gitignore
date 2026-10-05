@@ -1,0 +1,4 @@
+# ansible-galaxy collection install -r requirements.yml -p collections
+collections/
+# Personal values (your IP for fail2ban's ignoreip); see local.yml.example.
+group_vars/all/local.yml

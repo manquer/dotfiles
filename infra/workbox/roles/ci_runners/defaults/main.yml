@@ -1,0 +1,11 @@
+# Pools to run here; see group_vars/workbox_ci.yml for the shape.
+runner_pools: []
+
+# Inventory host the deploy checkouts, runner secrets and ghcr.io login are
+# copied FROM. Empty skips the copy (the files must then already be in place).
+runner_source_host: ""
+runner_sync: true
+
+# Stop and disable instances that are running but no longer listed. Off by
+# default: stopping a busy runner fails its in-flight job.
+runner_prune: false

@@ -37,3 +37,6 @@
 {{ if .machine.isPersonal }}
 .codex.work/
 {{ end }}
+
+# Ansible for the workbox hosts: lives in the source dir only, never in $HOME.
+infra/

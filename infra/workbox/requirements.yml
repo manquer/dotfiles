@@ -1,0 +1,8 @@
+collections:
+  # Pinned: 10.6.0 is what workbox2 was built with. A newer release can change
+  # defaults silently (10.6.0 itself moved ptrace_scope 1 -> 2 and password
+  # ageing 90 -> 60 relative to the release workbox was built with).
+  - name: devsec.hardening
+    version: 10.6.0
+  - name: community.general
+  - name: ansible.posix

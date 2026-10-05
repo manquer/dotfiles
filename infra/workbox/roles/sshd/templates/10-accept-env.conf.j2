@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+# Accept env vars forwarded via SendEnv from trusted clients.
+# Mirrors the client SendEnv list. Names are case-sensitive.
+{% for names in sshd_accept_env %}
+AcceptEnv {{ names }}
+{% endfor %}

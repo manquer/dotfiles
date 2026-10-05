@@ -1,0 +1,12 @@
+# workbox: devcontainers + runner pools 1..N (managed by each repo's own
+# deploy.sh and the crusible pool-schedule timer, not by this playbook).
+
+# Mirrors the client's SendEnv list in personal-hosts.ssh. Names only.
+sshd_accept_env:
+  - AWS_PROFILE
+  - LINEAR_API_KEY
+  - GITHUB_TOKEN GT_AUTH_TOKEN
+  - RXDB_PREMIUM NGROK_AUTHTOKEN
+  - SENTRY_AUTH_TOKEN FONTAWESOME_NPM_AUTH_TOKEN
+  - NORTHFLANK_API_TOKEN
+  - CONTEXT7_API_KEY

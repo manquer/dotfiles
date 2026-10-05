@@ -1,0 +1,62 @@
+- name: Docker packages
+  community.general.pacman:
+    name: [docker, docker-buildx, docker-compose]
+    state: present
+
+# os_hardening's 90-dev-sec.conf sets ip_forward=0 unless sysctl_overwrite
+# says otherwise (group_vars/all). This file sorts after it and wins anyway, so
+# a future change to the overwrite cannot silently cut container egress.
+- name: IPv4 forwarding for container egress
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/99-zz-docker-forwarding.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Docker host: container egress REQUIRES IPv4 forwarding.
+      #
+      # 90-dev-sec.conf (devsec.hardening os_hardening) defaults to
+      # net.ipv4.ip_forward=0. dockerd sets 1 at start, so the host works until
+      # something re-applies sysctl — then every container loses egress while
+      # DNS keeps working (Docker's 127.0.0.11 proxies from the host namespace),
+      # and runner pools hang at "# Authentication" with no error logged.
+      # Observed on workbox 2026-09-14.
+      #
+      # This file sorts after 90-dev-sec.conf, so it wins. IPv6 forwarding is
+      # left at the baseline's 0 — the bridges here are IPv4.
+      net.ipv4.ip_forward=1
+  notify: Apply sysctl
+
+# Compared as JSON, not as text: workbox's file has odd indentation, and a
+# byte-level diff would restart dockerd — killing every devcontainer and
+# runner on the host — over whitespace.
+- name: Read the current daemon.json
+  ansible.builtin.slurp:
+    src: /etc/docker/daemon.json
+  register: docker_daemon_current
+  failed_when: false
+  check_mode: false
+
+- name: daemon.json
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    content: "{{ docker_daemon_config | to_nice_json(indent=2) }}\n"
+    owner: root
+    group: root
+    mode: "0644"
+  when: >-
+    docker_daemon_current.content is not defined or
+    (docker_daemon_current.content | b64decode | from_json) != docker_daemon_config
+  notify: Restart docker
+
+- name: Admin user in the docker group
+  ansible.builtin.user:
+    name: "{{ admin_user }}"
+    groups: docker
+    append: true
+
+- name: Docker enabled
+  ansible.builtin.systemd_service:
+    name: docker
+    enabled: true
+    state: started

@@ -1,0 +1,52 @@
+# First contact with a fresh Hetzner box, AS ROOT. installimage leaves root
+# with the Robot key; this creates the admin user that every later play uses.
+# site.yml then disables root login, so this play runs exactly once per box.
+#
+#   ansible-playbook playbooks/bootstrap.yml -l workbox2 -u root
+#
+# Verify the host key fingerprints against the Robot panel BEFORE the first
+# connection (README §Fresh box).
+- name: Bootstrap the admin user
+  hosts: all
+  remote_user: root
+  gather_facts: false
+  tasks:
+    # Arch minimal has no python, so the first task is raw.
+    - name: Update the system and install python + sudo
+      ansible.builtin.raw: pacman -Syu --noconfirm --needed python sudo
+      register: bootstrap_pacman
+      changed_when: "'there is nothing to do' not in bootstrap_pacman.stdout"
+
+    # BEFORE os_hardening: login.defs ageing applies to accounts created after
+    # it, and an account with ageing set would be forced to change a password
+    # it does not have.
+    - name: Create the admin user, password locked (key-only)
+      ansible.builtin.user:
+        name: "{{ admin_user }}"
+        shell: /bin/bash
+        password_lock: true
+
+    - name: Authorise the admin key
+      ansible.posix.authorized_key:
+        user: "{{ admin_user }}"
+        key: "{{ admin_authorized_key }}"
+        exclusive: true
+
+    - name: Passwordless sudo for the admin user
+      ansible.builtin.copy:
+        dest: "/etc/sudoers.d/10-{{ admin_user }}"
+        content: "{{ admin_user }} ALL=(ALL) NOPASSWD: ALL\n"
+        mode: "0440"
+        validate: visudo -cf %s
+
+    - name: Hostname
+      ansible.builtin.hostname:
+        name: "{{ host_hostname }}"
+        use: systemd
+      when: host_hostname is defined
+
+    - name: Prove the admin user can log in and sudo before anything locks root out
+      ansible.builtin.command: >-
+        ssh -o BatchMode=yes -o ControlPath=none {{ admin_user }}@{{ inventory_hostname }} sudo -n true
+      delegate_to: localhost
+      changed_when: false

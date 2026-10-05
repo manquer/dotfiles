@@ -1,0 +1,57 @@
+# auditd.conf itself is rendered by os_hardening via os_auditd_template, so
+# this role owns only the rules.
+- name: audit package
+  community.general.pacman:
+    name: audit
+    state: present
+
+- name: Host audit rules
+  ansible.builtin.template:
+    src: 50-host.rules.j2
+    dest: /etc/audit/rules.d/50-host.rules
+    owner: root
+    group: root
+    mode: "0640"
+  notify: Load audit rules
+
+# auditd.service ships RefuseManualStop=yes, and os_hardening's handler does a
+# plain `systemctl restart auditd` whenever it re-renders auditd.conf. That
+# works on a fresh box (auditd not yet running, so restart == start) and fails
+# on every later run. This role runs before handlers flush, so the drop-in is
+# in place by the time the handler fires. Root can stop auditd regardless;
+# the refusal was never a security boundary.
+- name: auditd drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/auditd.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Allow os_hardening's auditd restart handler
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/auditd.service.d/allow-restart.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by infra/workbox (roles/auditd) in the dotfiles repo.
+      [Unit]
+      RefuseManualStop=no
+  register: auditd_dropin
+
+- name: Reload systemd now (the restart handler runs later this play)
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when: auditd_dropin.changed
+
+- name: auditd enabled
+  ansible.builtin.systemd_service:
+    name: auditd
+    enabled: true
+    state: started
+
+- name: auditd re-reads auditd.conf
+  ansible.builtin.command: auditctl --signal reload
+  changed_when: false
+  when: not ansible_check_mode

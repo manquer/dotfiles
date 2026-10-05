@@ -1,0 +1,151 @@
+# Host-to-host copy, source -> this host, with no credential at rest on
+# either side afterwards and none passing through the controller's disk:
+#
+#   1. the source mints a one-off ed25519 key;
+#   2. this host authorises it with from="<source IP>",restrict;
+#   3. the source pins this host's ed25519 host key and rsyncs;
+#   4. ALWAYS: the key is removed from both ends, success or not.
+#
+# The ghcr.io login is the one value that does transit the controller, in
+# memory and under no_log, because it is a JSON merge, not a file copy.
+
+- name: Source host network facts
+  ansible.builtin.setup:
+    gather_subset: [network]
+  delegate_to: "{{ runner_source_host }}"
+  delegate_facts: true
+  become: false
+
+- name: Transfer endpoints
+  ansible.builtin.set_fact:
+    runner_xfer_src_ip: "{{ hostvars[runner_source_host].ansible_default_ipv4.address }}"
+    runner_xfer_dst_ip: "{{ ansible_default_ipv4.address }}"
+    runner_xfer_key: "{{ hostvars[runner_source_host].ansible_env.HOME }}/.ssh/ansible_xfer_{{ inventory_hostname }}"
+    runner_xfer_src_home: "{{ hostvars[runner_source_host].ansible_env.HOME }}"
+
+- name: Transfer, then always revoke
+  block:
+    - name: One-off transfer key on the source
+      ansible.builtin.command: >-
+        ssh-keygen -q -t ed25519 -N '' -C 'ansible transfer to {{ inventory_hostname }} (temporary)'
+        -f {{ runner_xfer_key }}
+      args:
+        creates: "{{ runner_xfer_key }}"
+      delegate_to: "{{ runner_source_host }}"
+      become: false
+
+    - name: Read the transfer public key
+      ansible.builtin.slurp:
+        src: "{{ runner_xfer_key }}.pub"
+      delegate_to: "{{ runner_source_host }}"
+      become: false
+      register: runner_xfer_pub
+
+    - name: Authorise it here, from the source address only, no shell features
+      ansible.posix.authorized_key:
+        user: "{{ admin_user }}"
+        key: "{{ runner_xfer_pub.content | b64decode | trim }}"
+        key_options: 'from="{{ runner_xfer_src_ip }}",restrict'
+
+    - name: Read this host's ed25519 host key
+      ansible.builtin.slurp:
+        src: /etc/ssh/ssh_host_ed25519_key.pub
+      register: runner_xfer_hostkey
+
+    - name: Pin it on the source
+      ansible.builtin.copy:
+        dest: "{{ runner_xfer_key }}.known_hosts"
+        content: "{{ runner_xfer_dst_ip }} {{ (runner_xfer_hostkey.content | b64decode).split()[:2] | join(' ') }}\n"
+        mode: "0600"
+      delegate_to: "{{ runner_source_host }}"
+      become: false
+
+    # --delete mirrors the checkout; excluded paths (node_modules) are
+    # protected from deletion by rsync's default.
+    - name: Mirror deploy checkouts
+      ansible.builtin.shell: >-
+        rsync -a --delete --mkpath --itemize-changes
+        -e "ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes
+        -o UserKnownHostsFile={{ runner_xfer_key }}.known_hosts -i {{ runner_xfer_key }}"
+        --exclude=node_modules {{ '' if pool.sync_git | default(true) else '--exclude=/.git' }}
+        {{ pool.source_checkout | default(pool.checkout) }}/
+        {{ admin_user }}@{{ runner_xfer_dst_ip }}:{{ pool.checkout }}/
+      delegate_to: "{{ runner_source_host }}"
+      become: false
+      register: runner_rsync_tree
+      changed_when: runner_rsync_tree.stdout | length > 0
+      loop: "{{ runner_pools }}"
+      loop_control:
+        loop_var: pool
+        label: "{{ pool.name }}"
+
+    - name: Copy runner secrets (runner.env, 0600)
+      ansible.builtin.shell: >-
+        rsync -a --mkpath --itemize-changes --chmod=D700,F600
+        -e "ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes
+        -o UserKnownHostsFile={{ runner_xfer_key }}.known_hosts -i {{ runner_xfer_key }}"
+        {{ pool.source_home | default(pool.home) }}/secrets/runner.env
+        {{ admin_user }}@{{ runner_xfer_dst_ip }}:{{ pool.home }}/secrets/
+      delegate_to: "{{ runner_source_host }}"
+      become: false
+      register: runner_rsync_secrets
+      changed_when: runner_rsync_secrets.stdout | length > 0
+      loop: "{{ runner_pools }}"
+      loop_control:
+        loop_var: pool
+        label: "{{ pool.name }}"
+
+  always:
+    - name: Revoke the transfer key here
+      ansible.posix.authorized_key:
+        user: "{{ admin_user }}"
+        key: "{{ runner_xfer_pub.content | b64decode | trim }}"
+        state: absent
+      when: runner_xfer_pub.content is defined
+
+    - name: Delete the transfer key on the source
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ runner_xfer_key }}"
+        - "{{ runner_xfer_key }}.pub"
+        - "{{ runner_xfer_key }}.known_hosts"
+      delegate_to: "{{ runner_source_host }}"
+      become: false
+
+- name: Read the source's ghcr.io login
+  ansible.builtin.command: jq -c '.auths["ghcr.io"]' {{ runner_xfer_src_home }}/.docker/config.json
+  delegate_to: "{{ runner_source_host }}"
+  become: false
+  register: runner_ghcr_auth
+  changed_when: false
+  no_log: true
+
+- name: Docker config directory
+  ansible.builtin.file:
+    path: "/home/{{ admin_user }}/.docker"
+    state: directory
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "0700"
+
+- name: Read the local docker config
+  ansible.builtin.slurp:
+    src: "/home/{{ admin_user }}/.docker/config.json"
+  register: runner_docker_config
+  failed_when: false
+  no_log: true
+
+# Merge, not replace: anything else logged in here is kept.
+- name: ghcr.io login (pull access for the runner images)
+  ansible.builtin.copy:
+    dest: "/home/{{ admin_user }}/.docker/config.json"
+    content: >-
+      {{ ((runner_docker_config.content | b64decode | from_json) if runner_docker_config.content is defined else {})
+         | combine({'auths': {'ghcr.io': runner_ghcr_auth.stdout | from_json}}, recursive=true)
+         | to_nice_json(indent=2) }}
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "0600"
+  no_log: true

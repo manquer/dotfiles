@@ -1,0 +1,26 @@
+# {{ ansible_managed }}
+#
+# sshd is key-only (PasswordAuthentication no, MaxAuthTries 3), so this is
+# about noise and connection-slot exhaustion, not guessing. Bans go into
+# fail2ban's own nftables table (`inet f2b-table`), never into Docker's
+# iptables-nft tables or the host firewall table.
+#
+# Unban: sudo fail2ban-client unban <ip>
+
+[DEFAULT]
+banaction = nftables[type=multiport]
+banaction_allports = nftables[type=allports]
+backend = systemd
+ignoreip = 127.0.0.1/8 ::1{% for ip in fail2ban_ignoreip_extra %} {{ ip }}{% endfor %}
+
+findtime = {{ fail2ban_findtime }}
+maxretry = {{ fail2ban_maxretry }}
+bantime = {{ fail2ban_bantime }}
+bantime.increment = true
+bantime.maxtime = {{ fail2ban_bantime_maxtime }}
+
+[sshd]
+enabled = true
+backend = systemd
+mode = aggressive
+port = 22

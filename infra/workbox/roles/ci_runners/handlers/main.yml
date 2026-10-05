@@ -1,0 +1,12 @@
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+# A changed pool.env reaches each runner at its next start, which an
+# ephemeral runner reaches after its current job — so no forced restart here.
+# Long-lived services (browser pool) are restarted explicitly by the operator.
+- name: Restart runner pools
+  ansible.builtin.debug:
+    msg: >-
+      pool.env changed. Runners pick it up at their next job boundary; restart
+      crusible-browser-pool by hand if its capacity changed.

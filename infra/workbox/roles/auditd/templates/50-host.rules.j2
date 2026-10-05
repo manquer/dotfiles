@@ -1,0 +1,50 @@
+## {{ ansible_managed }}
+##
+## Scoped to CHANGES and to HUMAN privilege use. No blanket execve rule: a CI
+## host runs millions of short-lived processes a day, and logging them would
+## bury the signal and churn the disk. Container processes are started by
+## containerd (auid unset), so the root_cmd rule below sees only commands a
+## logged-in human ran through sudo/su.
+##
+## Not immutable (-e 2): rules stay editable without a reboot.
+
+-D
+-b 8192
+-f 1
+--backlog_wait_time 60000
+
+## Accounts and privilege config
+-w /etc/passwd -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+-w /etc/sudoers -p wa -k sudoers
+-w /etc/sudoers.d/ -p wa -k sudoers
+-w /etc/pam.d/ -p wa -k pam
+-w /etc/security/ -p wa -k pam
+
+## SSH
+-w /etc/ssh/sshd_config -p wa -k sshd
+-w /etc/ssh/sshd_config.d/ -p wa -k sshd
+-w /root/.ssh/ -p wa -k ssh_keys
+-w /home/{{ admin_user }}/.ssh/ -p wa -k ssh_keys
+
+## Kernel, network and firewall
+-w /etc/sysctl.conf -p wa -k sysctl
+-w /etc/sysctl.d/ -p wa -k sysctl
+-w /etc/modprobe.d/ -p wa -k modules
+-a always,exit -F arch=b64 -S init_module,finit_module,delete_module -k modules
+-w /etc/nftables.conf -p wa -k firewall
+-w /etc/fail2ban/ -p wa -k firewall
+-a always,exit -F arch=b64 -S adjtimex,settimeofday,clock_settime -k time_change
+
+## Persistence points: units, timers, cron, Docker
+-w /etc/systemd/system/ -p wa -k systemd
+-w /etc/crontab -p wa -k cron
+-w /etc/cron.d/ -p wa -k cron
+-w /etc/docker/ -p wa -k docker
+
+## Humans becoming root
+-w /usr/bin/sudo -p x -k priv_esc
+-w /usr/bin/su -p x -k priv_esc
+-a always,exit -F arch=b64 -S execve -F euid=0 -F auid>=1000 -F auid!=unset -k root_cmd
