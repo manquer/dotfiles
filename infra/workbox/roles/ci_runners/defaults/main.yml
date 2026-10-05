@@ -9,3 +9,7 @@ runner_sync: true
 # Stop and disable instances that are running but no longer listed. Off by
 # default: stopping a busy runner fails its in-flight job.
 runner_prune: false
+
+# Start/enable each pool's `instances`, and look for unlisted ones. Off where
+# something else owns the pool size (workbox: crusible-pool-schedule.timer).
+runner_manage_instances: true

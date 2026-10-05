@@ -1,0 +1,4 @@
+# Addresses never banned, beyond loopback. Set it in the untracked
+# group_vars/all/local.yml, NOT in group_vars/all/main.yml: files in that
+# directory load alphabetically, so main.yml would override local.yml.
+fail2ban_ignoreip_extra: []

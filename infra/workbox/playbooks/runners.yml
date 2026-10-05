@@ -1,11 +1,17 @@
-# Runner pools only (also imported by site.yml). Re-run to resize a pool
-# (group_vars/workbox_ci.yml) or to pull deploy-checkout updates from the
-# source host:
+# Runner pools only (also imported by site.yml). One run covers both hosts:
+# workbox pins its git checkouts to the deploy refs in group_vars/all, then
+# workbox2 mirrors workbox's trees. To roll a merged ops change, bump the ref
+# and run:
 #
-#   ansible-playbook playbooks/runners.yml -l workbox2
+#   ansible-playbook playbooks/runners.yml --diff
 #   ansible-playbook playbooks/runners.yml -l workbox2 -e runner_prune=true   # also stop instances no longer listed
+#
+# Limiting to workbox2 alone mirrors whatever workbox has checked out now.
 - name: CI runner pools
-  hosts: workbox_ci
+  hosts: all
   become: true
-  roles:
-    - ci_runners
+  tasks:
+    - name: Runner pools
+      ansible.builtin.include_role:
+        name: ci_runners
+      when: runner_pools | length > 0

@@ -19,15 +19,17 @@
       changed_when: false
       check_mode: false
       failed_when: site_whoami.stdout == 'root'
+      tags: [always]
+  # One tag per role: `--tags fail2ban` re-applies just that piece.
   roles:
-    - base
-    - devsec.hardening.os_hardening
-    - sshd
-    - docker
-    - role: firewall
-      when: firewall_enabled | bool
-    - fail2ban
-    - auditd
+    - { role: base, tags: [base] }
+    - { role: devsec.hardening.os_hardening, tags: [hardening] }
+    - { role: sshd, tags: [sshd] }
+    - { role: docker, tags: [docker] }
+    - { role: firewall, when: firewall_enabled | bool, tags: [firewall] }
+    - { role: fail2ban, tags: [fail2ban] }
+    - { role: auditd, tags: [auditd] }
 
 - name: CI runner pools
   ansible.builtin.import_playbook: runners.yml
+  tags: [runners]

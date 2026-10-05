@@ -46,8 +46,14 @@ firewall_block_published_ports: true
 # ---------------------------------------------------------------------------
 # fail2ban
 # ---------------------------------------------------------------------------
-fail2ban_ignoreip_extra: []
 fail2ban_maxretry: 5
 fail2ban_findtime: 10m
 fail2ban_bantime: 1h
 fail2ban_bantime_maxtime: 1w
+
+# ---------------------------------------------------------------------------
+# Runner deploy refs. workbox moves its git checkout to these; workbox2 then
+# mirrors workbox's tree in the same run. Bump to roll a merged ops change.
+# ---------------------------------------------------------------------------
+# crusiblehq/app#6067: paginated runner list in reconcile/verify/teardown.
+crusible_deploy_ref: b3e445b7fe9f9d89b1db80ef73e3aab0c3e7bcbe

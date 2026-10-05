@@ -10,3 +10,62 @@ sshd_accept_env:
   - SENTRY_AUTH_TOKEN FONTAWESOME_NPM_AUTH_TOKEN
   - NORTHFLANK_API_TOKEN
   - CONTEXT7_API_KEY
+
+# ---------------------------------------------------------------------------
+# Runner pools. workbox's git checkouts are the source workbox2 mirrors.
+# Pool SIZES are owned by crusible-pool-schedule.timer (and its hand-edited
+# /etc/crusible-runner/pool-schedule.env), not by this playbook.
+# ---------------------------------------------------------------------------
+runner_manage_instances: false
+
+runner_pools:
+  - name: crusible-runner
+    home: /home/{{ admin_user }}/gh-runners
+    # A worktree of ~/crusible/.bare, detached at deploy_ref.
+    checkout: /home/{{ admin_user }}/gh-runners/deploy
+    ops_subdir: ops/ci-runners
+    deploy_ref: "{{ crusible_deploy_ref }}"
+    units:
+      - crusible-runner@.service
+      - crusible-browser-pool.service
+      - crusible-reconcile.service
+      - crusible-reconcile.timer
+      - crusible-pool-schedule.service
+      - crusible-pool-schedule.timer
+    services:
+      - crusible-browser-pool.service
+      - crusible-reconcile.timer
+      - crusible-pool-schedule.timer
+    dropins:
+      - name: persistent.conf
+        content: |
+          # Every crusible runner keeps its registration across jobs and
+          # retires after RUNNER_MAX_JOBS (docker-compose.persistent.yml).
+          # Template-wide, so a unit the schedule enables later is persistent too.
+          [Service]
+          Environment=RUNNER_PERSISTENT=1
+    pool_env_extra: |
+      # DX-0006-20 browser pool. A slot is one lane's worth of browsers, not one tab.
+      # 25 per ops/ci-runners/README.md §Browser pool — a chosen ceiling, not a measured
+      # one, so the first contended nightly is the measurement.
+      BROWSER_POOL_CAPACITY=25
+      BROWSER_POOL_RESERVED=1
+      # BROWSER_POOL_SHM_SIZE is deliberately NOT pinned here: docker-compose.yml
+      # carries the budget and mise run ci:browser-pool-shm asserts it against
+      # BROWSER_POOL_CAPACITY. A pin here overrides that default silently.
+
+  # supergraph and webclients: no deploy_ref, so their checkouts (on develop)
+  # are left where they are; set one to roll them.
+  - name: supergraph-ci-runner
+    home: /home/{{ admin_user }}/gh-runners-supergraph
+    checkout: /home/{{ admin_user }}/supergraph-ci-deploy
+    ops_subdir: infra/ops/ci-runners
+    units:
+      - supergraph-ci-runner@.service
+
+  - name: webclients-ci-runner
+    home: /home/{{ admin_user }}/gh-runners-webclients
+    checkout: /home/{{ admin_user }}/webclients-ci-deploy
+    ops_subdir: dx/ops/ci-runners
+    units:
+      - webclients-ci-runner@.service

@@ -3,6 +3,14 @@
 # repos ship), and only the host-specific values — pool.env and the User=
 # drop-in — are written here. Instance numbers come from runner_pools.
 
+# reconcile.sh lists registrations with `gh api` (authenticated by the
+# WATCHDOG_TOKEN in runner.env); without the CLI it exits 1 on every tick and
+# the pool goes unsupervised, silently but for a failed unit.
+- name: GitHub CLI for reconcile.sh
+  community.general.pacman:
+    name: github-cli
+    state: present
+
 - name: Runner state directories
   ansible.builtin.file:
     path: "{{ item.0.home }}/{{ item.1.dir }}"
@@ -13,6 +21,36 @@
   loop: "{{ runner_pools | product([{'dir': '', 'mode': '0755'}, {'dir': 'secrets', 'mode': '0700'}, {'dir': 'work', 'mode': '0750'}]) | list }}"
   loop_control:
     label: "{{ item.0.home }}/{{ item.1.dir }}"
+
+# Hosts with GitHub access (workbox) move their own checkout to the pool's
+# `deploy_ref` — the "re-pin OPS_DIR" step of each repo's rollout notes. It runs
+# BEFORE the sync below, and Ansible's linear strategy finishes a task on every
+# host before the next, so a CI host syncing from this one in the same run
+# always receives the new ref. Pools without `deploy_ref` are left as they are.
+- name: Pin deploy checkouts to deploy_ref
+  ansible.builtin.shell: |
+    set -euo pipefail
+    cd {{ pool.checkout | quote }}
+    if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
+      echo "dirty checkout, refusing to move it" >&2; exit 1
+    fi
+    before="$(git rev-parse HEAD)"
+    git fetch --quiet origin
+    git checkout --quiet --detach {{ pool.deploy_ref | quote }}
+    after="$(git rev-parse HEAD)"
+    echo "$before -> $after"
+    [[ "$before" == "$after" ]] || echo CHANGED
+  args:
+    executable: /bin/bash
+  become: true
+  become_user: "{{ admin_user }}"
+  register: runner_pin
+  changed_when: "'CHANGED' in runner_pin.stdout"
+  when: pool.deploy_ref is defined and not ansible_check_mode
+  loop: "{{ runner_pools }}"
+  loop_control:
+    loop_var: pool
+    label: "{{ pool.name }} -> {{ pool.deploy_ref | default('unpinned') }}"
 
 - name: Copy checkouts, secrets and registry login from the source host
   ansible.builtin.include_tasks: sync.yml
@@ -135,9 +173,10 @@
     name: "{{ item.0.name }}@{{ item.1 }}.service"
     enabled: true
     state: started
-  loop: "{{ runner_pools | subelements('instances') }}"
+  loop: "{{ runner_pools | subelements('instances', skip_missing=true) }}"
   loop_control:
     label: "{{ item.0.name }}@{{ item.1 }}"
+  when: runner_manage_instances | bool
 
 - name: Instances systemd knows about, per pool
   ansible.builtin.shell: |
@@ -149,6 +188,7 @@
   register: runner_known
   changed_when: false
   check_mode: false
+  when: runner_manage_instances | bool
   loop: "{{ runner_pools }}"
   loop_control:
     loop_var: pool
@@ -165,16 +205,17 @@
   loop_control:
     loop_var: r
     label: "{{ r.pool.name }}"
+  when: runner_manage_instances | bool
 
 - name: Report unlisted instances (re-run with -e runner_prune=true to stop them)
   ansible.builtin.debug:
     msg: "Not in runner_pools but known to systemd: {{ runner_extra_units | join(', ') }}"
-  when: runner_extra_units | length > 0 and not runner_prune | bool
+  when: runner_manage_instances | bool and runner_extra_units | default([]) | length > 0 and not runner_prune | bool
 
 - name: Stop and disable unlisted instances
   ansible.builtin.systemd_service:
     name: "{{ item }}"
     enabled: false
     state: stopped
-  loop: "{{ runner_extra_units }}"
-  when: runner_prune | bool
+  loop: "{{ runner_extra_units | default([]) }}"
+  when: runner_manage_instances | bool and runner_prune | bool
