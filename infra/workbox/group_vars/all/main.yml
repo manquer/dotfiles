@@ -55,5 +55,7 @@ fail2ban_bantime_maxtime: 1w
 # Runner deploy refs. workbox moves its git checkout to these; workbox2 then
 # mirrors workbox's tree in the same run. Bump to roll a merged ops change.
 # ---------------------------------------------------------------------------
-# crusiblehq/app#6067: paginated runner list in reconcile/verify/teardown.
-crusible_deploy_ref: b3e445b7fe9f9d89b1db80ef73e3aab0c3e7bcbe
+# 2026-10-06: what workbox runs. Includes 4439a60 (each runner pinned to its
+# own set of at most 8 CPUs, block (N-1) mod 12) and 68bdcb2 (load-guard,
+# installed on workbox only), on top of #6067 (paginated runner list).
+crusible_deploy_ref: c6a4c63bc9e7aadd5a16cac538e054cb0515bab5

@@ -32,10 +32,15 @@ runner_pools:
       - crusible-reconcile.timer
       - crusible-pool-schedule.service
       - crusible-pool-schedule.timer
+      - crusible-load-guard.service
+      - crusible-load-guard.timer
     services:
       - crusible-browser-pool.service
       - crusible-reconcile.timer
       - crusible-pool-schedule.timer
+      # Sizes the pool by load and writes pool-schedule.env. Not on workbox2:
+      # it manages units 1..CEILING, and workbox2 runs a fixed 101-120.
+      - crusible-load-guard.timer
     dropins:
       - name: persistent.conf
         content: |
