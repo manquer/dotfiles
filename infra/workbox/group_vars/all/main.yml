@@ -59,3 +59,28 @@ fail2ban_bantime_maxtime: 1w
 # own set of at most 8 CPUs, block (N-1) mod 12) and 68bdcb2 (load-guard,
 # installed on workbox only), on top of #6067 (paginated runner list).
 crusible_deploy_ref: c6a4c63bc9e7aadd5a16cac538e054cb0515bab5
+
+# ---------------------------------------------------------------------------
+# Diagnostics, on every host. sysstat also gets its collector enabled, so
+# `sar` can look back at CPU/IO/memory history after an incident instead of
+# only at the present.
+extra_packages:
+  - btop
+  - htop
+  - iotop-c
+  - sysstat
+  - lsof
+  - strace
+  - tcpdump
+  - bind # dig, host
+  - mtr
+  - iperf3
+  - ncdu
+  - smartmontools
+  - nvme-cli
+  - ethtool
+  - perf
+  - gdb
+  - lm_sensors
+  - psmisc # pstree, killall, fuser
+  - tmux

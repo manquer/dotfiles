@@ -28,7 +28,15 @@
     group: "{{ admin_user }}"
     mode: "0644"
 
-- name: Extra packages (per group, e.g. diagnostics on workbox_ci)
+# iotop-c (maintained C rewrite, same `iotop` command) conflicts with the old
+# python iotop, and pacman refuses the swap non-interactively.
+- name: Replace python iotop with iotop-c
+  community.general.pacman:
+    name: iotop
+    state: absent
+  when: "'iotop-c' in (extra_packages | default([]))"
+
+- name: Extra packages (diagnostics, group_vars/all)
   community.general.pacman:
     name: "{{ extra_packages }}"
     state: present
