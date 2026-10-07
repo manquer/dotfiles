@@ -54,3 +54,26 @@ runner_pools:
     units:
       - webclients-ci-runner@.service
     instances: "{{ range(101, 106) | list }}"
+
+# Diagnostics. sysstat also gets its collector enabled, so `sar` can look back
+# at CPU/IO/memory history after an incident instead of only at the present.
+extra_packages:
+  - btop
+  - htop
+  - iotop-c
+  - sysstat
+  - lsof
+  - strace
+  - tcpdump
+  - bind # dig, host
+  - mtr
+  - iperf3
+  - ncdu
+  - smartmontools
+  - nvme-cli
+  - ethtool
+  - perf
+  - gdb
+  - lm_sensors
+  - psmisc # pstree, killall, fuser
+  - tmux

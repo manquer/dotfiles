@@ -27,3 +27,16 @@
     owner: "{{ admin_user }}"
     group: "{{ admin_user }}"
     mode: "0644"
+
+- name: Extra packages (per group, e.g. diagnostics on workbox_ci)
+  community.general.pacman:
+    name: "{{ extra_packages }}"
+    state: present
+  when: extra_packages | default([]) | length > 0
+
+- name: sysstat collector (sar history)
+  ansible.builtin.systemd_service:
+    name: sysstat.service
+    enabled: true
+    state: started
+  when: "'sysstat' in (extra_packages | default([]))"
