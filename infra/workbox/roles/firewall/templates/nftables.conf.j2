@@ -21,7 +21,11 @@ table inet host {
 		# Containers talking to the host (anything bound on a bridge gateway).
 		iifname { "docker0", "br-*" } accept
 
-		meta l4proto icmp icmp type { echo-request, destination-unreachable, time-exceeded, parameter-problem } limit rate 20/second accept
+		# No `limit` here: the kernel already rate-limits ICMP replies
+		# (net.ipv4.icmp_ratelimit, set by os_hardening), and nft_limit is a module
+		# a long-running host may be unable to load once pacman has replaced its
+		# kernel's modules (workbox, 2026-10-09).
+		meta l4proto icmp icmp type { echo-request, destination-unreachable, time-exceeded, parameter-problem } accept
 		meta l4proto ipv6-icmp accept
 
 		# SSH (IPv4-only: AddressFamily inet) and mosh are the only public services.

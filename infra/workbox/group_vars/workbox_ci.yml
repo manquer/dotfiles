@@ -1,5 +1,4 @@
-# workbox2: CI runners only. Nothing is published to the internet but SSH.
-firewall_enabled: true
+# workbox2: CI runners only. (The firewall is on for every host; group_vars/all.)
 
 # Deploy checkouts, secrets and the ghcr.io login are copied host-to-host from
 # here (no GitHub credentials live on the CI box). See roles/ci_runners.
@@ -7,7 +6,8 @@ runner_source_host: workbox
 
 # Instance numbers start at 101. Runner names are `<pool>-runner-<N>`, so
 # reusing workbox's 1..N would make GitHub hand workbox's registrations to this
-# box. Expect more crusible load than talview load (owner, 2026-10-05).
+# box. Fixed sizes (owner, 2026-10-11): crusible 35, supergraph 5, webclients 5,
+# with no time-based switching.
 runner_pools:
   - name: crusible-runner
     home: /home/{{ admin_user }}/gh-runners
@@ -35,7 +35,7 @@ runner_pools:
       # DX-0006-20 browser pool. A slot is one lane's worth of browsers.
       BROWSER_POOL_CAPACITY=25
       BROWSER_POOL_RESERVED=1
-    instances: "{{ range(101, 121) | list }}"
+    instances: "{{ range(101, 136) | list }}" # 35
 
   - name: supergraph-ci-runner
     home: /home/{{ admin_user }}/gh-runners-supergraph

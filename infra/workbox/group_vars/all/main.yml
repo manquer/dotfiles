@@ -35,10 +35,12 @@ os_auditd_max_log_file_action: rotate
 sshd_accept_env: []
 
 # ---------------------------------------------------------------------------
-# Firewall (nftables, table `inet host`). Off unless a group turns it on: on a
-# devcontainer host it would need care around published ports first.
+# Firewall (nftables, table `inet host`): SSH and mosh in, everything else
+# dropped, and Docker-published ports unreachable from the WAN. On for every
+# host since 2026-10-09, after workbox turned out to publish an orphaned
+# devcontainer stack (Postgres, ClickHouse, Hasura) to the internet.
 # ---------------------------------------------------------------------------
-firewall_enabled: false
+firewall_enabled: true
 firewall_wan_iface: "{{ ansible_default_ipv4.interface }}"
 # Drop new inbound connections from the internet to Docker-published ports.
 firewall_block_published_ports: true
