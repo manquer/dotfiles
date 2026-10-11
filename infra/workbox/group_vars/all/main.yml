@@ -86,3 +86,12 @@ extra_packages:
   - lm_sensors
   - psmisc # pstree, killall, fuser
   - tmux
+
+# btop layout, same on every host (owner, 2026-10-11): the disks/io panel
+# beside memory, processes by CPU, a 2 s refresh. Theme stays per host. btop
+# writes its whole config back on quit (save_config_on_exit), so a change
+# made in its menu lasts until the next playbook run.
+btop_settings:
+  show_disks: "true"
+  proc_sorting: '"cpu lazy"'
+  update_ms: "2000"

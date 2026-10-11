@@ -48,3 +48,25 @@
     enabled: true
     state: started
   when: "'sysstat' in (extra_packages | default([]))"
+
+- name: btop config directory
+  ansible.builtin.file:
+    path: "/home/{{ admin_user }}/.config/btop"
+    state: directory
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "0750"
+
+# Key by key, not a template: btop owns the rest of the file and rewrites it.
+- name: btop layout
+  ansible.builtin.lineinfile:
+    path: "/home/{{ admin_user }}/.config/btop/btop.conf"
+    regexp: "^{{ item.key }} ="
+    line: "{{ item.key }} = {{ item.value }}"
+    create: true
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "0640"
+  loop: "{{ btop_settings | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
