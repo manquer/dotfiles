@@ -35,6 +35,11 @@ runner_pools:
       # DX-0006-20 browser pool. A slot is one lane's worth of browsers.
       BROWSER_POOL_CAPACITY=25
       BROWSER_POOL_RESERVED=1
+
+      # lxcfs views (crusiblehq/app#6886): os.cpus(), /proc/cpuinfo and
+      # os.cpu_count() report the runner's 8 CPUs, not the host's 96. Pool-wide
+      # since 2026-10-12 after a 5-runner pilot on workbox2 showed no regressions.
+      RUNNER_LXCFS=1
     instances: "{{ range(101, 136) | list }}" # 35
 
   - name: supergraph-ci-runner

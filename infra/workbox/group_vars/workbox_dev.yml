@@ -61,6 +61,11 @@ runner_pools:
       # carries the budget and mise run ci:browser-pool-shm asserts it against
       # BROWSER_POOL_CAPACITY. A pin here overrides that default silently.
 
+      # lxcfs views (crusiblehq/app#6886): os.cpus(), /proc/cpuinfo and
+      # os.cpu_count() report the runner's 8 CPUs, not the host's 96. Pool-wide
+      # since 2026-10-12 after a 5-runner pilot on workbox2 showed no regressions.
+      RUNNER_LXCFS=1
+
 
   # supergraph and webclients: no deploy_ref, so their checkouts (on develop)
   # are left where they are; set one to roll them.
