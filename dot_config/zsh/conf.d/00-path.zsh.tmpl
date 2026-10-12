@@ -33,6 +33,25 @@ unset gnu_formula
 # would resolve to the gnuman dirs alone and every other man page would vanish.
 # typeset -U drops this again if an empty entry is already present.
 manpath+=("")
+
+# Android SDK (Android Studio's default location). SDK-owned cmdline-tools win over
+# the Homebrew cask's copies so sdkmanager/avdmanager always target this SDK.
+export ANDROID_HOME="${HOME}/Library/Android/sdk"
+export ANDROID_SDK_ROOT="${ANDROID_HOME}"
+if [[ -d "${ANDROID_HOME}" ]]; then
+    path=(
+        "${ANDROID_HOME}/cmdline-tools/latest/bin"
+        "${ANDROID_HOME}/platform-tools"
+        "${ANDROID_HOME}/emulator"
+        $path
+    )
+fi
+
+# JDK 21 for Gradle on the CLI (AGP 8+ needs 17+; Android Studio uses its own JBR).
+# Switch per shell with: export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+if [[ -z "${JAVA_HOME:-}" ]] && /usr/libexec/java_home -v 21 &> /dev/null; then
+    export JAVA_HOME="$(/usr/libexec/java_home -v 21)"
+fi
 {{ end }}
 
 # Cargo (Rust)

@@ -64,6 +64,18 @@ Complete list of packages, tools, and applications installed by this dotfiles se
 | `llvm` | Upstream LLVM/Clang toolchain, newer than Xcode's bundled clang |
 | `gcc` | Real GNU GCC (Xcode's `gcc` is actually clang in disguise) |
 
+### Android / Mobile
+
+| Package | Description |
+|---------|-------------|
+| `gradle` | Gradle build tool (projects normally use `./gradlew`) |
+| `kotlin` | Kotlin compiler / REPL |
+| `ktlint` | Kotlin linter & formatter |
+| `bundletool` | Build/inspect/install `.aab` app bundles |
+| `scrcpy` | Mirror & control Android devices/emulators |
+| `apktool` | Decode / rebuild APK resources |
+| `jadx` | Dex to Java decompiler |
+
 ### Editors
 
 | Package | Description |
@@ -210,6 +222,23 @@ Only installed when GUI is detected (`.machine.hasGui = true`).
 | iTerm2 | Terminal emulator |
 | Postman | API client |
 | TablePlus | Database GUI |
+| Android Studio | Android IDE |
+| android-commandlinetools | `sdkmanager`/`avdmanager`, used to bootstrap the SDK |
+| Temurin 17 / 21 | JDKs; `JAVA_HOME` defaults to 21 (`/usr/libexec/java_home -v 17` to switch) |
+
+#### Android SDK & emulators
+
+`run_onchange_after_install-android-sdk.sh.tmpl` (macOS + GUI only) installs into
+`~/Library/Android/sdk` (`$ANDROID_HOME`, with `platform-tools`, `emulator` and
+`cmdline-tools/latest/bin` on `PATH`):
+
+- Platforms API 28–37.0 (Android 9–17), build-tools 34–37, NDK 27.3 + 29.0, CMake 3.22.1 + 4.1.2
+- Google Play arm64 system images for API 28, 30, 33, 35, 36, 37.0, plus Wear OS and Google TV (API 36)
+- AVDs: Pixel 10 (37), Pixel 9 / 9 Pro Fold / Tablet (36), Pixel 8 (35), Pixel 6 (33),
+  Pixel 4 (30), Pixel 3 (28), Wear OS Large Round (36), TV 1080p (36)
+
+Edit the lists at the top of the script to change versions; it reruns on change and skips
+packages and AVDs that already exist.
 
 ### Browsers
 

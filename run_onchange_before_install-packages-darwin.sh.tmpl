@@ -109,6 +109,15 @@ brew "check-jsonschema" # JSON Schema validator CLI
 brew "yaml-language-server" # YAML LSP server
 brew "ipython"         # Enhanced Python REPL
 
+# CLI Tools - Android / Mobile
+brew "gradle"          # Gradle build tool (projects normally use ./gradlew)
+brew "kotlin"          # Kotlin compiler / REPL
+brew "ktlint"          # Kotlin linter & formatter
+brew "bundletool"      # Build/inspect/install .aab app bundles
+brew "scrcpy"          # Mirror & control Android devices/emulators over adb
+brew "apktool"         # Decode / rebuild APK resources
+brew "jadx"            # Dex -> Java decompiler (CLI + GUI)
+
 # CLI Tools - DevOps & Cloud
 brew "docker"
 brew "docker-compose"  # Multi-container Docker orchestration
@@ -220,6 +229,10 @@ cask "pgadmin4"        # PostgreSQL admin GUI
 cask "devpod"          # Codespaces-like dev environments
 cask "ngrok"           # Secure tunnels to localhost
 cask "clickhouse"      # ClickHouse client
+cask "android-studio"  # Android IDE; SDK + emulators via run_onchange_after_install-android-sdk
+cask "android-commandlinetools" # sdkmanager/avdmanager used to bootstrap the SDK
+cask "temurin@17"      # JDK 17 LTS (React Native / older AGP)
+cask "temurin@21"      # JDK 21 LTS, default JAVA_HOME for Gradle on the CLI
 
 # GUI Applications - Browsers
 cask "google-chrome"

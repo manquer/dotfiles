@@ -1,0 +1,113 @@
+{{ if and .machine.isDarwin .machine.hasGui -}}
+#!/bin/bash
+
+set -eufo pipefail
+
+# Installs the Android SDK packages and emulators below into Android Studio's default
+# SDK location. Reruns whenever this file changes, so bump versions here. Packages
+# and AVDs that are already present are left as they are.
+
+ANDROID_HOME="$HOME/Library/Android/sdk"
+
+# System images (and the AVDs built on them) are arm64 Google Play images.
+SDK_PACKAGES=(
+    "cmdline-tools;latest"
+    "platform-tools"
+    "emulator"
+    # Android 9 (28) through Android 17 (37.0)
+    "platforms;android-28"
+    "platforms;android-29"
+    "platforms;android-30"
+    "platforms;android-31"
+    "platforms;android-32"
+    "platforms;android-33"
+    "platforms;android-34"
+    "platforms;android-35"
+    "platforms;android-36"
+    "platforms;android-37.0"
+    "build-tools;34.0.0"
+    "build-tools;35.0.1"
+    "build-tools;36.1.0"
+    "build-tools;37.0.0"
+    "ndk;27.3.13750724"
+    "ndk;29.0.14206865"
+    "cmake;3.22.1"
+    "cmake;4.1.2"
+    "system-images;android-28;google_apis_playstore;arm64-v8a"
+    "system-images;android-30;google_apis_playstore;arm64-v8a"
+    "system-images;android-33;google_apis_playstore;arm64-v8a"
+    "system-images;android-35;google_apis_playstore;arm64-v8a"
+    "system-images;android-36;google_apis_playstore;arm64-v8a"
+    "system-images;android-37.0;google_apis_playstore;arm64-v8a"
+    "system-images;android-36;android-wear-signed;arm64-v8a"
+    "system-images;android-36;google-tv;arm64-v8a"
+)
+
+# name|device profile|system image
+AVDS=(
+    "Pixel_10_API_37|pixel_10|system-images;android-37.0;google_apis_playstore;arm64-v8a"
+    "Pixel_9_API_36|pixel_9|system-images;android-36;google_apis_playstore;arm64-v8a"
+    "Pixel_9_Pro_Fold_API_36|pixel_9_pro_fold|system-images;android-36;google_apis_playstore;arm64-v8a"
+    "Pixel_Tablet_API_36|pixel_tablet|system-images;android-36;google_apis_playstore;arm64-v8a"
+    "Pixel_8_API_35|pixel_8|system-images;android-35;google_apis_playstore;arm64-v8a"
+    "Pixel_6_API_33|pixel_6|system-images;android-33;google_apis_playstore;arm64-v8a"
+    "Pixel_4_API_30|pixel_4|system-images;android-30;google_apis_playstore;arm64-v8a"
+    "Pixel_3_API_28|pixel_3|system-images;android-28;google_apis_playstore;arm64-v8a"
+    "Wear_OS_Large_Round_API_36|wearos_large_round|system-images;android-36;android-wear-signed;arm64-v8a"
+    "TV_1080p_API_36|tv_1080p|system-images;android-36;google-tv;arm64-v8a"
+)
+
+# sdkmanager needs a JDK; Android Studio's bundled JBR is always there once the cask is in.
+if [[ -z "${JAVA_HOME:-}" ]]; then
+    if [[ -d "/Applications/Android Studio.app/Contents/jbr/Contents/Home" ]]; then
+        export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+    elif /usr/libexec/java_home &> /dev/null; then
+        export JAVA_HOME="$(/usr/libexec/java_home)"
+    else
+        echo "No JDK found, skipping Android SDK install."
+        exit 0
+    fi
+fi
+
+# Prefer the SDK's own cmdline-tools; fall back to the Homebrew cask to bootstrap them.
+SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+[[ -x "$SDKMANAGER" ]] || SDKMANAGER="$(command -v sdkmanager || true)"
+if [[ -z "$SDKMANAGER" ]]; then
+    echo "sdkmanager not found (brew install --cask android-commandlinetools), skipping."
+    exit 0
+fi
+
+mkdir -p "$ANDROID_HOME"
+
+echo "Accepting Android SDK licenses..."
+yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses > /dev/null || true
+
+echo "Installing Android SDK packages..."
+"$SDKMANAGER" --sdk_root="$ANDROID_HOME" "${SDK_PACKAGES[@]}"
+
+AVDMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
+existing_avds="$("$AVDMANAGER" list avd -c 2> /dev/null || true)"
+
+for spec in "${AVDS[@]}"; do
+    IFS='|' read -r name device image <<< "$spec"
+    if grep -qx "$name" <<< "$existing_avds"; then
+        continue
+    fi
+    echo "Creating AVD $name..."
+    echo "no" | "$AVDMANAGER" create avd --name "$name" --device "$device" --package "$image"
+    # Hardware keyboard, GPU on the host, and a usable data partition
+    config="$HOME/.android/avd/$name.avd/config.ini"
+    # (grep, not sed -i: GNU and BSD sed disagree on -i and either may be first on PATH)
+    grep -vE '^(hw\.keyboard|hw\.gpu\.enabled|hw\.gpu\.mode|disk\.dataPartition\.size)=' "$config" > "$config.tmp" || true
+    {
+        cat "$config.tmp"
+        echo "hw.keyboard=yes"
+        echo "hw.gpu.enabled=yes"
+        echo "hw.gpu.mode=host"
+        echo "disk.dataPartition.size=8G"
+    } > "$config"
+    rm -f "$config.tmp"
+done
+
+echo "Android SDK and emulators ready in $ANDROID_HOME"
+{{ end -}}
