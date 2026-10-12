@@ -14,8 +14,9 @@ sshd_accept_env:
 # ---------------------------------------------------------------------------
 # Runner pools. workbox's git checkouts are the source workbox2 mirrors.
 # Pool SIZES are owned by crusible-pool-schedule.timer and its hand-edited
-# /etc/crusible-runner/pool-schedule.env, not by this playbook. Fixed since
-# 2026-10-11: crusible 15, supergraph 5, webclients 5; no time-based switching.
+# /etc/crusible-runner/pool-schedule.env (CRUSIBLE_SIZE=15, FOREIGN_SIZE=5;
+# crusiblehq/app#6851), not by this playbook. load-guard's ceiling is
+# CRUSIBLE_SIZE. No time-based switching.
 # ---------------------------------------------------------------------------
 runner_manage_instances: false
 
@@ -60,9 +61,6 @@ runner_pools:
       # carries the budget and mise run ci:browser-pool-shm asserts it against
       # BROWSER_POOL_CAPACITY. A pin here overrides that default silently.
 
-      # load-guard (scripts/load-guard.sh) may cut the pool when load5 > 250,
-      # and grows it back no further than this: the fixed size, owner 2026-10-11.
-      CEILING=15
 
   # supergraph and webclients: no deploy_ref, so their checkouts (on develop)
   # are left where they are; set one to roll them.

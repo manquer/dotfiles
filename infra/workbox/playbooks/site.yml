@@ -26,6 +26,7 @@
     - { role: devsec.hardening.os_hardening, tags: [hardening] }
     - { role: sshd, tags: [sshd] }
     - { role: docker, tags: [docker] }
+    - { role: lxcfs, tags: [lxcfs] }
     - { role: firewall, when: firewall_enabled | bool, tags: [firewall] }
     - { role: fail2ban, tags: [fail2ban] }
     - { role: auditd, tags: [auditd] }

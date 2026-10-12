@@ -1,0 +1,36 @@
+# LXCFS: per-container views of /proc/{cpuinfo,stat,meminfo,...} and
+# /sys/devices/system/cpu/online, rendered from each container's cpuset and
+# memory limit. Runner containers bind-mount these (crusiblehq/app,
+# runner-start.sh, RUNNER_LXCFS=1) so os.cpus(), /proc/cpuinfo and Python's
+# os.cpu_count() report the runner's 8 CPUs instead of the host's 96. Without
+# that, third-party tools that size worker pools from those calls (Playwright's
+# default workers, for one) oversubscribe 8 CPUs, and contention-flaky tests
+# cost reruns.
+#
+# Installing it changes nothing inside any container: only a mount does.
+#
+# RISK, AND WHY THE UNIT IS LEFT AS ARCH SHIPS IT: if lxcfs exits under a
+# running container, that container's mounted /proc files fail with "Transport
+# endpoint is not connected" until the container is recreated. Arch never
+# restarts services on upgrade, the unit runs at OOMScoreAdjust=-1000, and its
+# reload (USR1) swaps liblxcfs in place without dropping the mounts.
+- name: lxcfs package
+  community.general.pacman:
+    name: lxcfs
+    state: present
+
+- name: lxcfs running
+  ansible.builtin.systemd_service:
+    name: lxcfs
+    enabled: true
+    state: started
+
+- name: lxcfs is serving the views runners mount
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: lxcfs_view
+  failed_when: not lxcfs_view.stat.exists
+  loop:
+    - /var/lib/lxcfs/proc/cpuinfo
+    - /var/lib/lxcfs/proc/meminfo
+    - /var/lib/lxcfs/sys/devices/system/cpu/online
