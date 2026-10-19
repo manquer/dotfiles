@@ -49,6 +49,21 @@
     state: started
   when: "'sysstat' in (extra_packages | default([]))"
 
+# THP defrag=madvise made every huge-page fault from a madvising runtime (Go,
+# V8, jemalloc) compact memory synchronously. On workbox, 2026-10-19, that was
+# ~500 compaction stalls/s, ~30M pages scanned/s, 59% system CPU and load ~300
+# with 60 GB free. `defer` falls back to small pages and leaves compaction to
+# kcompactd. A sysfs knob, not a sysctl, so tmpfiles writes it at boot.
+- name: THP defrag deferred to kcompactd
+  ansible.builtin.copy:
+    dest: /etc/tmpfiles.d/thp-defrag.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      w /sys/kernel/mm/transparent_hugepage/defrag - - - - defer
+  notify: Apply tmpfiles
+
 - name: btop config directory
   ansible.builtin.file:
     path: "/home/{{ admin_user }}/.config/btop"
