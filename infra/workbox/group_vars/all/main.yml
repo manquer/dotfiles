@@ -60,7 +60,9 @@ fail2ban_bantime_maxtime: 1w
 # 2026-10-12: main at crusiblehq/app#6886 (lxcfs views, opt-in RUNNER_LXCFS=1)
 # and #6851 (fixed per-host pool sizes, POOL_INSTANCE_BASE), on top of the
 # 8-CPU sets (4439a60), load-guard (68bdcb2) and #6067. Image ci-runner@d3ce5eb.
-crusible_deploy_ref: a3d8b29fc504d220bf83d4c9fc9cf61e393fac4a
+# 2026-10-20: main at crusiblehq/app#7786 (quick-runner pool: class labels
+# crusible-ci-common / crusible-ci-quick, CRUSIBLE_QUICK_RESERVATION, POOL_INSTANCE_BASE).
+crusible_deploy_ref: 7ddbf97f2ef1f969e0bc031d23bf3d15395f916c
 
 # ---------------------------------------------------------------------------
 # Diagnostics, on every host. sysstat also gets its collector enabled, so
