@@ -6,7 +6,7 @@ runner_source_host: workbox
 
 # Instance numbers start at 101. Runner names are `<pool>-runner-<N>`, so
 # reusing workbox's 1..N would make GitHub hand workbox's registrations to this
-# box. Fixed sizes (owner, 2026-10-11): crusible 35, supergraph 5, webclients 5,
+# box. Fixed sizes (owner, 2026-10-20): crusible 25, supergraph 5, webclients 5,
 # with no time-based switching.
 runner_pools:
   - name: crusible-runner
@@ -40,7 +40,7 @@ runner_pools:
       # os.cpu_count() report the runner's 8 CPUs, not the host's 96. Pool-wide
       # since 2026-10-12 after a 5-runner pilot on workbox2 showed no regressions.
       RUNNER_LXCFS=1
-    instances: "{{ range(101, 136) | list }}" # 35
+    instances: "{{ range(101, 126) | list }}" # 25
 
   - name: supergraph-ci-runner
     home: /home/{{ admin_user }}/gh-runners-supergraph
