@@ -3,8 +3,8 @@
 # herdr-pin - hold the local herdr client at a known-good version.
 #
 # homebrew-core carries a single unversioned herdr formula, so brew on its own
-# cannot express "stay on 0.9.0": every `brew upgrade` walks the binary forward.
-# This pours the official 0.9.0 bottle out of ghcr into the Cellar, links that
+# cannot express "stay on 0.9.5": every `brew upgrade` walks the binary forward.
+# This pours the official 0.9.5 bottle out of ghcr into the Cellar, links that
 # keg, and pins the formula so brew leaves it alone from then on.
 #
 # Relinking tears down every attached herdr client, so the swap only runs
@@ -19,7 +19,7 @@
 
 set -euo pipefail
 
-PINNED_VERSION="${HERDR_PINNED_VERSION:-0.9.0}"
+PINNED_VERSION="${HERDR_PINNED_VERSION:-0.9.5}"
 GHCR_REPO="homebrew/core/herdr"
 CACHE_DIR="${XDG_CACHE_HOME:-${HOME}/.cache}/herdr-pin"
 BOTTLE_PATH=""

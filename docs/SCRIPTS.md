@@ -223,10 +223,10 @@ Not chezmoi scripts: these are managed files under `dot_local/bin/`, applied to
 ### `herdr-pin`
 
 **Purpose**: Holds the local `herdr` client at a known-good version - currently
-**0.9.0** - instead of tracking homebrew-core's latest.
+**0.9.5** - instead of tracking homebrew-core's latest.
 
 homebrew-core carries a single unversioned `herdr` formula, so brew on its own
-cannot express "stay on 0.9.0". The script pours the official bottle for the
+cannot express "stay on 0.9.5". The script pours the official bottle for the
 pinned version out of ghcr into the Cellar, links that keg and pins the formula
 so `brew upgrade` leaves it alone.
 
