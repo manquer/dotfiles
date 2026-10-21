@@ -94,7 +94,13 @@ extra_packages:
 # beside memory, processes by CPU, a 2 s refresh. Theme stays per host. btop
 # writes its whole config back on quit (save_config_on_exit), so a change
 # made in its menu lasts until the next playbook run.
+# Net box on every host, and the disks panel cut to / and swap (owner,
+# 2026-10-21): disks_filter matches mountpoints only, so it drops /home and
+# /boot/efi; swap_disk adds swap as its own entry, outside the filter.
 btop_settings:
+  shown_boxes: '"cpu mem net proc"'
   show_disks: "true"
+  disks_filter: '"/"'
+  swap_disk: "true"
   proc_sorting: '"cpu lazy"'
   update_ms: "2000"
