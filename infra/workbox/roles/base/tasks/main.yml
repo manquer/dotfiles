@@ -85,3 +85,41 @@
   loop: "{{ btop_settings | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
+
+# One swapfile per host, sized by swapfile_size (group_vars). Created once and
+# never resized here: to grow it, swapoff and remove /swapfile, then re-run.
+- name: Swapfile
+  when: swapfile_size is defined
+  block:
+    - name: Swapfile allocated
+      ansible.builtin.command: fallocate -l {{ swapfile_size }} /swapfile
+      args:
+        creates: /swapfile
+      register: base_swapfile_new
+
+    - name: Swapfile mode
+      ansible.builtin.file:
+        path: /swapfile
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Swapfile formatted
+      ansible.builtin.command: mkswap /swapfile
+      when: base_swapfile_new is changed
+
+    - name: Swapfile in fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: '^/swapfile\s'
+        line: /swapfile none swap defaults,pri=10 0 0
+
+    - name: Active swaps
+      ansible.builtin.command: swapon --show=NAME --noheadings
+      register: base_swaps
+      changed_when: false
+      check_mode: false
+
+    - name: Swapfile enabled
+      ansible.builtin.command: swapon /swapfile
+      when: "'/swapfile' not in base_swaps.stdout_lines"

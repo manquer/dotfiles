@@ -4,6 +4,10 @@
 # here (no GitHub credentials live on the CI box). See roles/ci_runners.
 runner_source_host: workbox
 
+# The only swap on this box (owner, 2026-10-21): replaced the 4G md1 partition
+# swap and the 32G + 96G swapfiles. The md1 partition is left unused.
+swapfile_size: 128G
+
 # Instance numbers start at 101. Runner names are `<pool>-runner-<N>`, so
 # reusing workbox's 1..N would make GitHub hand workbox's registrations to this
 # box. Fixed sizes (owner, 2026-10-20): crusible 25, supergraph 5, webclients 5,
