@@ -10,8 +10,9 @@ swapfile_size: 128G
 
 # Instance numbers start at 101. Runner names are `<pool>-runner-<N>`, so
 # reusing workbox's 1..N would make GitHub hand workbox's registrations to this
-# box. Fixed sizes (owner, 2026-10-20): crusible 25, supergraph 5, webclients 5,
-# with no time-based switching.
+# box. supergraph and webclients hold a fixed 5 each. crusible scales between 5
+# and 40 by host load (owner, 2026-10-21): crusible-load-guard.timer starts and
+# retires units 101..140, so the pool lists no `instances` for Ansible to start.
 runner_pools:
   - name: crusible-runner
     home: /home/{{ admin_user }}/gh-runners
@@ -25,9 +26,20 @@ runner_pools:
       - crusible-browser-pool.service
       - crusible-reconcile.service
       - crusible-reconcile.timer
+      - crusible-load-guard.service
+      - crusible-load-guard.timer
     services:
       - crusible-browser-pool.service
       - crusible-reconcile.timer
+      # load5 > 250 cuts 5 runners, load5 < 100 adds 5, never below the floor
+      # of 5 (the script's FLOOR) or above CRUSIBLE_SIZE. No pool-schedule timer
+      # here: the guard alone owns the crusible size.
+      - crusible-load-guard.timer
+    # Key by key into the hand-edited pool-schedule.env, which load-guard also
+    # writes (CRUSIBLE_TARGET), so it is never templated whole.
+    schedule_env:
+      - POOL_INSTANCE_BASE=100
+      - CRUSIBLE_SIZE=40
     dropins:
       # Template-wide on workbox too: keep the registration across jobs and
       # retire after RUNNER_MAX_JOBS (docker-compose.persistent.yml).
@@ -44,7 +56,6 @@ runner_pools:
       # os.cpu_count() report the runner's 8 CPUs, not the host's 96. Pool-wide
       # since 2026-10-12 after a 5-runner pilot on workbox2 showed no regressions.
       RUNNER_LXCFS=1
-    instances: "{{ range(101, 126) | list }}" # 25
 
   - name: supergraph-ci-runner
     home: /home/{{ admin_user }}/gh-runners-supergraph

@@ -81,6 +81,20 @@
     label: "{{ pool.name }}"
   notify: Restart runner pools
 
+# Line by line: load-guard.sh rewrites CRUSIBLE_TARGET in the same file.
+- name: pool-schedule.env keys (sizes for pool-schedule.sh / load-guard.sh)
+  ansible.builtin.lineinfile:
+    path: "/etc/{{ item.0.name }}/pool-schedule.env"
+    regexp: "^{{ item.1.split('=')[0] }}="
+    line: "{{ item.1 }}"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ runner_pools | subelements('schedule_env', skip_missing=true) }}"
+  loop_control:
+    label: "{{ item.0.name }}: {{ item.1 }}"
+
 - name: Unit files from the deploy checkout
   ansible.builtin.copy:
     src: "{{ item.0.checkout }}/{{ item.0.ops_subdir }}/{{ item.1 }}"
@@ -188,7 +202,8 @@
   register: runner_known
   changed_when: false
   check_mode: false
-  when: runner_manage_instances | bool
+  # A pool without `instances` is sized by something else (workbox2: load-guard).
+  when: runner_manage_instances | bool and pool.instances is defined
   loop: "{{ runner_pools }}"
   loop_control:
     loop_var: pool
@@ -205,7 +220,7 @@
   loop_control:
     loop_var: r
     label: "{{ r.pool.name }}"
-  when: runner_manage_instances | bool
+  when: runner_manage_instances | bool and r.pool.instances is defined
 
 - name: Report unlisted instances (re-run with -e runner_prune=true to stop them)
   ansible.builtin.debug:

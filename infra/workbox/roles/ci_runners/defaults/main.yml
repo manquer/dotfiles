@@ -11,5 +11,6 @@ runner_sync: true
 runner_prune: false
 
 # Start/enable each pool's `instances`, and look for unlisted ones. Off where
-# something else owns the pool size (workbox: crusible-pool-schedule.timer).
+# something else owns the pool size (workbox: crusible-pool-schedule.timer); a
+# single pool opts out by listing no `instances` (workbox2: crusible load-guard).
 runner_manage_instances: true
