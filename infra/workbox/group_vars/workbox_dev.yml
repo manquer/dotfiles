@@ -1,5 +1,5 @@
 # workbox: devcontainers + runner pools 1..N (managed by each repo's own
-# deploy.sh and the crusible pool-schedule timer, not by this playbook).
+# deploy.sh and the crusible load-guard timer, not by this playbook).
 
 # Mirrors the client's SendEnv list in personal-hosts.ssh. Names only.
 sshd_accept_env:
@@ -13,10 +13,10 @@ sshd_accept_env:
 
 # ---------------------------------------------------------------------------
 # Runner pools. workbox's git checkouts are the source workbox2 mirrors.
-# Pool SIZES are owned by crusible-pool-schedule.timer and its hand-edited
-# /etc/crusible-runner/pool-schedule.env (CRUSIBLE_SIZE=15, FOREIGN_SIZE=5;
-# crusiblehq/app#6851), not by this playbook. load-guard's ceiling is
-# CRUSIBLE_SIZE. No time-based switching.
+# Pool SIZES are not owned by this playbook. crusible scales between 5 and 15
+# by host load (owner, 2026-10-22): crusible-load-guard.timer starts and
+# retires units 1..15. supergraph and webclients hold their enabled 5 each.
+# No time-based switching.
 # ---------------------------------------------------------------------------
 runner_manage_instances: false
 
@@ -39,10 +39,14 @@ runner_pools:
     services:
       - crusible-browser-pool.service
       - crusible-reconcile.timer
-      - crusible-pool-schedule.timer
-      # Sizes the pool by load and writes pool-schedule.env. workbox2 runs it
-      # too, over 101..140 (POOL_INSTANCE_BASE=100).
+      # load5 > 250 cuts 5 runners, load5 < 100 adds 5, never below the floor
+      # of 5 (the script's FLOOR) or above CRUSIBLE_SIZE. No pool-schedule timer
+      # (as on workbox2): the guard alone owns the crusible size.
       - crusible-load-guard.timer
+    # Key by key into the hand-edited pool-schedule.env, which load-guard also
+    # writes (CRUSIBLE_TARGET), so it is never templated whole.
+    schedule_env:
+      - CRUSIBLE_SIZE=15
     dropins:
       - name: persistent.conf
         content: |
