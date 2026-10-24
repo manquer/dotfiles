@@ -103,6 +103,8 @@
         owner: root
         group: root
         mode: "0600"
+      # --check does not create the file, so there is nothing to inspect yet
+      when: not (ansible_check_mode and base_swapfile_new is changed)
 
     - name: Swapfile formatted
       ansible.builtin.command: mkswap /swapfile
@@ -121,5 +123,5 @@
       check_mode: false
 
     - name: Swapfile enabled
-      ansible.builtin.command: swapon /swapfile
+      ansible.builtin.command: swapon -p 10 /swapfile
       when: "'/swapfile' not in base_swaps.stdout_lines"

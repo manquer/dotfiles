@@ -1,6 +1,11 @@
 # workbox: devcontainers + runner pools 1..N (managed by each repo's own
 # deploy.sh and the crusible load-guard timer, not by this playbook).
 
+# The only swap on this box (owner, 2026-10-21): replaced the 4G md1 partition
+# swap. The md1 partition is left unused. 32G -> 64G on 2026-10-24: CI bursts
+# had filled all 32G (allocstalls, RAM briefly down to 2G free).
+swapfile_size: 64G
+
 # Mirrors the client's SendEnv list in personal-hosts.ssh. Names only.
 sshd_accept_env:
   - AWS_PROFILE
