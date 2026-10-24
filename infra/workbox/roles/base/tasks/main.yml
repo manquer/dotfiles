@@ -52,17 +52,39 @@
 # THP defrag=madvise made every huge-page fault from a madvising runtime (Go,
 # V8, jemalloc) compact memory synchronously. On workbox, 2026-10-19, that was
 # ~500 compaction stalls/s, ~30M pages scanned/s, 59% system CPU and load ~300
-# with 60 GB free. `defer` falls back to small pages and leaves compaction to
-# kcompactd. A sysfs knob, not a sysctl, so tmpfiles writes it at boot.
-- name: THP defrag deferred to kcompactd
+# with 60 GB free. So no fault compacts synchronously (`defer`, now `never`).
+# Sysfs knobs, not sysctls, so tmpfiles writes them at boot.
+#
+# THP enabled=always made every allocation try for a 2M page. On workbox,
+# 2026-10-24, no order-9 block was free with 100 GB free, ~640 THP fallbacks/s,
+# and each fallback's watermark boost had kswapd reclaim ~110k pages/s into
+# zswap: idle devcontainers refilled 25 GB of swap minutes after a drain.
+# madvise keeps huge pages for the runtimes that ask for them. defer still
+# woke kswapd on every fallback of theirs (~60/s, ~2 GB/min into swap with
+# 100 GB free); never takes a free 2M block or falls back, waking nothing.
+# kcompactd's proactive compaction and khugepaged still build huge pages.
+- name: THP limited to madvise, no reclaim or compaction at fault
   ansible.builtin.copy:
     dest: /etc/tmpfiles.d/thp-defrag.conf
     owner: root
     group: root
     mode: "0644"
     content: |
-      w /sys/kernel/mm/transparent_hugepage/defrag - - - - defer
+      w /sys/kernel/mm/transparent_hugepage/enabled - - - - madvise
+      w /sys/kernel/mm/transparent_hugepage/defrag - - - - never
   notify: Apply tmpfiles
+
+# The other half of the reclaim above: no boosted kswapd reclaim on a
+# fragmentation event. kcompactd still compacts; nothing is evicted for it.
+- name: No watermark boost on fragmentation
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/60-vm-reclaim.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      vm.watermark_boost_factor = 0
+  notify: Apply vm sysctl
 
 - name: btop config directory
   ansible.builtin.file:

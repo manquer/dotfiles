@@ -1,3 +1,9 @@
 - name: Apply tmpfiles
   ansible.builtin.command: systemd-tmpfiles --create /etc/tmpfiles.d/thp-defrag.conf
   changed_when: true
+
+# This file only: `sysctl --system` would also re-apply os_hardening's
+# ip_forward=0 if the docker drop-in ever went missing.
+- name: Apply vm sysctl
+  ansible.builtin.command: sysctl -p /etc/sysctl.d/60-vm-reclaim.conf
+  changed_when: true
