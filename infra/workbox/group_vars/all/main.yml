@@ -63,7 +63,9 @@ fail2ban_bantime_maxtime: 1w
 # 2026-10-20: main at crusiblehq/app#7786 (quick-runner pool: class labels
 # crusible-ci-common / crusible-ci-quick, CRUSIBLE_QUICK_RESERVATION, POOL_INSTANCE_BASE).
 # 2026-10-21: main at b2398cbe4c's pin, ci-runner@sha256:6b7c03670abf (images run 39632033766).
-crusible_deploy_ref: f7e3d0455532b591e951982d1f18dace03e3dbf4
+# 2026-10-23: 1f2464539b's pin, ci-runner@sha256:2562d4acf655 (images run 39981721755),
+# with #7915 (cordon a retiring runner).
+crusible_deploy_ref: 1f2464539b278b80349d32776739f3121472f8c4
 
 # ---------------------------------------------------------------------------
 # Diagnostics, on every host. sysstat also gets its collector enabled, so
