@@ -76,6 +76,13 @@
 
 # The other half of the reclaim above: no boosted kswapd reclaim on a
 # fragmentation event. kcompactd still compacts; nothing is evicted for it.
+#
+# That still left one waker. ext4 page-cache writes ask for order-9 folios
+# (__GFP_WRITE|__GFP_NORETRY), which THP settings do not govern. On workbox,
+# 2026-10-27, ~45 such fallbacks/min each had kswapd reclaim a full high
+# watermark (~150k pages), and at swappiness 10 idle devcontainer anon went
+# with it: 64G of swap full with 120G available. vm_swappiness (group_vars)
+# keeps that reclaim on page cache. Real pressure still swaps once cache runs out.
 - name: No watermark boost on fragmentation
   ansible.builtin.copy:
     dest: /etc/sysctl.d/60-vm-reclaim.conf
@@ -84,7 +91,19 @@
     mode: "0644"
     content: |
       vm.watermark_boost_factor = 0
+      {% if vm_swappiness is defined %}
+      vm.swappiness = {{ vm_swappiness }}
+      {% endif %}
   notify: Apply vm sysctl
+
+# 99-devpods.conf is hand-made (not managed here) and sorts after 60-, so its
+# swappiness would win at boot.
+- name: No competing swappiness in the hand-made devpods sysctl file
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.d/99-devpods.conf
+    regexp: '^\s*vm\.swappiness\s*='
+    state: absent
+  when: vm_swappiness is defined
 
 - name: btop config directory
   ansible.builtin.file:

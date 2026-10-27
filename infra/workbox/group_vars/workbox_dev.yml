@@ -6,6 +6,11 @@
 # had filled all 32G (allocstalls, RAM briefly down to 2G free).
 swapfile_size: 64G
 
+# 0 on 2026-10-27: at 10, kswapd's fragmentation-driven reclaim filled all
+# 64G with idle devcontainer memory while 120G stayed available. See the
+# vm sysctl task in roles/base.
+vm_swappiness: 0
+
 # Mirrors the client's SendEnv list in personal-hosts.ssh. Names only.
 sshd_accept_env:
   - AWS_PROFILE
