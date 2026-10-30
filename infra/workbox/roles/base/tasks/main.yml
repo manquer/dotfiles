@@ -127,6 +127,39 @@
   loop_control:
     label: "{{ item.key }}"
 
+# A user copy of a packaged theme with some colours replaced. force: false
+# copies it once, so a btop upgrade's changes to the base theme are not
+# picked up; delete the copy to re-seed it.
+- name: btop theme
+  when: btop_theme is defined
+  vars:
+    base_btop_theme_path: "/home/{{ admin_user }}/.config/btop/themes/{{ btop_theme.base | basename }}"
+  block:
+    - name: btop theme copied
+      ansible.builtin.copy:
+        src: "{{ btop_theme.base }}"
+        dest: "{{ base_btop_theme_path }}"
+        remote_src: true
+        force: false
+        owner: "{{ admin_user }}"
+        group: "{{ admin_user }}"
+        mode: "0640"
+
+    - name: btop theme colours
+      ansible.builtin.lineinfile:
+        path: "{{ base_btop_theme_path }}"
+        regexp: '^theme\[{{ item.key }}\]='
+        line: 'theme[{{ item.key }}]="{{ item.value }}"'
+      loop: "{{ btop_theme.overrides | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+
+    - name: btop uses the theme
+      ansible.builtin.lineinfile:
+        path: "/home/{{ admin_user }}/.config/btop/btop.conf"
+        regexp: "^color_theme ="
+        line: 'color_theme = "{{ base_btop_theme_path }}"'
+
 # One swapfile per host, sized by swapfile_size (group_vars). Created once and
 # never resized here: to grow it, swapoff and remove /swapfile, then re-run.
 - name: Swapfile

@@ -99,6 +99,8 @@ extra_packages:
 # Net box on every host, and the disks panel cut to / and swap (owner,
 # 2026-10-21): disks_filter matches mountpoints only, so it drops /home and
 # /boot/efi; swap_disk adds swap as its own entry, outside the filter.
+# theme_background off (owner, 2026-10-30): the terminal's own background shows
+# through instead of the theme's main_bg (kanagawa-wave's is near-black).
 btop_settings:
   shown_boxes: '"cpu mem net proc"'
   show_disks: "true"
@@ -106,3 +108,4 @@ btop_settings:
   swap_disk: "true"
   proc_sorting: '"cpu lazy"'
   update_ms: "2000"
+  theme_background: "false"

@@ -11,6 +11,16 @@ swapfile_size: 64G
 # vm sysctl task in roles/base.
 vm_swappiness: 0
 
+# btop theme: kanagawa-wave, but its free meter is a red gradient, so free
+# disk and swap read as an alarm (owner, 2026-10-30). The role copies the
+# packaged theme into ~/.config/btop/themes once and sets these keys in it.
+btop_theme:
+  base: /usr/share/btop/themes/kanagawa-wave.theme
+  overrides:
+    free_start: "#76946A"
+    free_mid: "#98BB6C"
+    free_end: "#7AA89F"
+
 # Mirrors the client's SendEnv list in personal-hosts.ssh. Names only.
 sshd_accept_env:
   - AWS_PROFILE
