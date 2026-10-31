@@ -1,0 +1,4 @@
+# Per devpod container. 16 CPUs x 5 blocks fill CPUs 0-79 (devpod_cpu_span).
+devpod_cpus: 16
+devpod_memory: 48g
+devpod_cpu_span: 80

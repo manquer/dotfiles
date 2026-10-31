@@ -1,0 +1,13 @@
+# Caps devpod containers' CPUs and memory (/usr/local/sbin/devpod-limits).
+[Unit]
+Description=Cap devpod containers' CPUs and memory
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStart=/usr/local/sbin/devpod-limits
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,40 @@
+# Devpod containers get a CPU set and a memory limit at every start, so a
+# rebuild or restart keeps them (files/devpod-limits.sh has the why). Never
+# restarts a devpod: `docker update` applies to the running container.
+- name: devpod-limits script
+  ansible.builtin.copy:
+    src: devpod-limits.sh
+    dest: /usr/local/sbin/devpod-limits
+    mode: "0755"
+  notify: Restart devpod-limits
+
+- name: devpod-limits unit
+  ansible.builtin.copy:
+    src: devpod-limits.service
+    dest: /etc/systemd/system/devpod-limits.service
+    mode: "0644"
+  notify: Restart devpod-limits
+
+- name: devpod-limits drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/devpod-limits.service.d
+    state: directory
+    mode: "0755"
+
+- name: devpod-limits settings
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/devpod-limits.service.d/settings.conf
+    mode: "0644"
+    content: |
+      [Service]
+      Environment=DEVPOD_CPUS={{ devpod_cpus }}
+      Environment=DEVPOD_MEMORY={{ devpod_memory }}
+      Environment=DEVPOD_CPU_SPAN={{ devpod_cpu_span }}
+  notify: Restart devpod-limits
+
+- name: devpod-limits running
+  ansible.builtin.systemd_service:
+    name: devpod-limits
+    enabled: true
+    state: started
+    daemon_reload: true

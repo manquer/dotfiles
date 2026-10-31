@@ -27,6 +27,7 @@
     - { role: sshd, tags: [sshd] }
     - { role: docker, tags: [docker] }
     - { role: lxcfs, tags: [lxcfs] }
+    - { role: devpod_limits, when: "'workbox_dev' in group_names", tags: [devpod_limits] }
     - { role: firewall, when: firewall_enabled | bool, tags: [firewall] }
     - { role: fail2ban, tags: [fail2ban] }
     - { role: auditd, tags: [auditd] }
