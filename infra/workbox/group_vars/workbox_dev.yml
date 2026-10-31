@@ -33,9 +33,9 @@ sshd_accept_env:
 
 # ---------------------------------------------------------------------------
 # Runner pools. workbox's git checkouts are the source workbox2 mirrors.
-# Pool SIZES are not owned by this playbook. crusible scales between 5 and 15
-# by host load (owner, 2026-10-22): crusible-load-guard.timer starts and
-# retires units 1..15. supergraph and webclients hold their enabled 5 each.
+# Pool SIZES are not owned by this playbook. crusible scales between 5 and 10
+# by host load (owner, 2026-10-30; 15 until then): crusible-load-guard.timer
+# starts and retires units 1..10. supergraph and webclients hold their enabled 5 each.
 # No time-based switching.
 # ---------------------------------------------------------------------------
 runner_manage_instances: false
@@ -59,14 +59,14 @@ runner_pools:
     services:
       - crusible-browser-pool.service
       - crusible-reconcile.timer
-      # load5 > 250 cuts 5 runners, load5 < 100 adds 5, never below the floor
+      # load5 > 250 cuts 5 runners, load5 <= LOAD_MIN adds 5, never below the floor
       # of 5 (the script's FLOOR) or above CRUSIBLE_SIZE. No pool-schedule timer
       # (as on workbox2): the guard alone owns the crusible size.
       - crusible-load-guard.timer
     # Key by key into the hand-edited pool-schedule.env, which load-guard also
     # writes (CRUSIBLE_TARGET), so it is never templated whole.
     schedule_env:
-      - CRUSIBLE_SIZE=15
+      - CRUSIBLE_SIZE=10
     dropins:
       - name: persistent.conf
         content: |
@@ -89,6 +89,10 @@ runner_pools:
       # os.cpu_count() report the runner's 8 CPUs, not the host's 96. Pool-wide
       # since 2026-10-12 after a 5-runner pilot on workbox2 showed no regressions.
       RUNNER_LXCFS=1
+
+      # load-guard scale-up threshold: add runners while load5 <= 150 (owner,
+      # 2026-10-30). The script's own default is 100.
+      LOAD_MIN=150
 
 
   # supergraph and webclients: no deploy_ref, so their checkouts (on develop)
