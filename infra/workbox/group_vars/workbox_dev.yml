@@ -33,9 +33,9 @@ sshd_accept_env:
 
 # ---------------------------------------------------------------------------
 # Runner pools. workbox's git checkouts are the source workbox2 mirrors.
-# Pool SIZES are not owned by this playbook. crusible scales between 5 and 20
+# Pool SIZES are not owned by this playbook. crusible scales between 5 and 30
 # by host load (owner, 2026-10-30; 15 until then): crusible-load-guard.timer
-# starts and retires units 1..20. supergraph and webclients hold their enabled 5 each.
+# starts and retires units 1..30. supergraph and webclients hold their enabled 5 each.
 # No time-based switching.
 # ---------------------------------------------------------------------------
 runner_manage_instances: false
@@ -66,7 +66,7 @@ runner_pools:
     # Key by key into the hand-edited pool-schedule.env, which load-guard also
     # writes (CRUSIBLE_TARGET), so it is never templated whole.
     schedule_env:
-      - CRUSIBLE_SIZE=20
+      - CRUSIBLE_SIZE=30
     dropins:
       - name: persistent.conf
         content: |
