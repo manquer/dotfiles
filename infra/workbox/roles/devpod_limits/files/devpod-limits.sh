@@ -50,5 +50,5 @@ limit() {
 
 for id in $("$DOCKER" ps -q --filter "label=${LABEL}"); do limit "$id"; done
 [[ "${1:-}" == "--once" ]] && exit 0
-"$DOCKER" events --filter type=container --filter event=start --filter "label=${LABEL}" --format '{{.ID}}' |
+"$DOCKER" events --filter type=container --filter event=start --filter "label=${LABEL}" --format '{{.Actor.ID}}' |
 	while read -r id; do limit "$id"; done
