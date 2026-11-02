@@ -17,8 +17,10 @@
   },
   "agent": {
     "default_model": {
+      "effort": "high",
+      "enable_thinking": true,
       "provider": "zed.dev",
-      "model": "gemini-3-flash"
+      "model": "claude-sonnet-4-6"
     },
     "default_width": 645.0,
     "dock": "right",

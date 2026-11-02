@@ -5,6 +5,6 @@ onboarding = false
 prefix = "backtick"
 
 [terminal]
-default_shell = "/opt/homebrew/bin/zsh"
+#default_shell = "/opt/homebrew/bin/zsh"
 shell_mode = "auto"
 new_cwd = "follow"
