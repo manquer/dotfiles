@@ -24,6 +24,11 @@ export LC_ALL="en_US.UTF-8"
 {{ if .machine.isDarwin }}
 # macOS specific
 export DOCKER_HOST="unix://${HOME}/.config/colima/default/docker.sock"
+# ssh itself finds Secretive through IdentityAgent in ~/.ssh/config; this is for
+# ssh-add, git and other tools that only read SSH_AUTH_SOCK.
+_secretive_sock="${HOME}/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh"
+[[ -S "${_secretive_sock}" ]] && export SSH_AUTH_SOCK="${_secretive_sock}"
+unset _secretive_sock
 {{ end }}
 
 # NODE_ENV IS DELIBERATELY NOT EXPORTED HERE. A login-shell NODE_ENV reaches

@@ -3,9 +3,10 @@
 
 admin_user: mani
 admin_shell: /usr/bin/zsh
-# bootstrap.yml installs this as the admin user's only key. It is the key
-# Hetzner's Robot put on root at provisioning time.
-admin_authorized_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+# bootstrap.yml installs this as the admin user's only key. It must also be
+# the key Hetzner's Robot puts on root at provisioning time. It is the public
+# half of the Secretive (Secure Enclave) key; run_once_after_02 exports it here.
+admin_authorized_key: "{{ lookup('file', '~/.ssh/id_secretive.pub') }}"
 host_timezone: UTC
 
 # ---------------------------------------------------------------------------

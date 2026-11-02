@@ -146,38 +146,13 @@ echo "Oh My Zsh and Powerlevel10k installed successfully."
 
 #### `run_once_after_02-generate-ssh-keys.sh.tmpl`
 
-**Purpose**: Generates Ed25519 SSH keys.
+**Purpose**: Sets up the machine's SSH identity.
 
 **Runs**: Once, after files are applied
 
 **Actions**:
-1. Generates Ed25519 SSH key pair
-2. Adds to macOS keychain (on Darwin)
-3. Displays public key for adding to GitHub/GitLab
-
-**Source** (templated):
-```bash
-#!/bin/bash
-set -euo pipefail
-
-SSH_DIR="{{ .chezmoi.homeDir }}/.ssh"
-
-if [[ ! -f "${SSH_DIR}/id_ed25519" ]]; then
-    echo "Generating SSH key..."
-    ssh-keygen -t ed25519 -C "{{ .git.email }}" -f "${SSH_DIR}/id_ed25519" -N ""
-
-    {{ if .machine.isDarwin }}
-    # Add to macOS keychain
-    ssh-add --apple-use-keychain "${SSH_DIR}/id_ed25519"
-    {{ end }}
-
-    echo "SSH key generated: ${SSH_DIR}/id_ed25519.pub"
-    echo "Add this to your GitHub/GitLab account:"
-    cat "${SSH_DIR}/id_ed25519.pub"
-else
-    echo "SSH key already exists, skipping..."
-fi
-```
+- **macOS**: private keys live in the Secure Enclave via [Secretive](https://github.com/maxgoedjen/secretive) (cask in the darwin package list) and are never written to disk. Secretive creates keys only through its GUI, so the script copies the key's public half to `~/.ssh/id_secretive.pub` (used by `infra/workbox` as `admin_authorized_key`) and prints it for GitHub/GitLab. `~/.ssh/config` points `IdentityAgent` at Secretive's socket, and `~/.zshenv` exports `SSH_AUTH_SOCK` for tools that don't read ssh config.
+- **Linux**: generates `~/.ssh/id_ed25519` if missing and prints the public key.
 
 #### `run_after_pin-herdr.sh.tmpl`
 
