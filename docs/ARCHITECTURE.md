@@ -98,7 +98,7 @@ Config files are templated and applied:
 | Order | Script | Purpose |
 |-------|--------|---------|
 | 01 | `run_once_after_01-install-ohmyzsh.sh.tmpl` | Install Oh My Zsh + Powerlevel10k theme |
-| 02 | `run_once_after_02-generate-ssh-keys.sh.tmpl` | Generate Ed25519 SSH key, add to macOS keychain |
+| 02 | `run_once_after_02-generate-ssh-keys.sh.tmpl` | macOS: export Secretive (Secure Enclave) public key; Linux: generate Ed25519 key |
 
 ## File Naming Conventions
 

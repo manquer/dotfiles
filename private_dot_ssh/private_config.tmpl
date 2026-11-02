@@ -1,0 +1,12 @@
+# Managed by chezmoi — edit source at ~/.local/share/chezmoi/private_dot_ssh/private_config.tmpl
+# Dynamic includes (managed by devbox/colima — not chezmoi)
+Include ~/.namespace/ssh/*.ssh
+Include ~/.config/colima/ssh_config
+
+ServerAliveInterval 60
+{{- if .machine.isDarwin }}
+
+# Private keys live in the Secure Enclave via Secretive, not on disk. If the
+# agent isn't running, ssh logs a warning and falls back to ~/.ssh/id_* files.
+IdentityAgent ~/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
+{{- end }}

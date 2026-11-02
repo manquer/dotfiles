@@ -40,3 +40,9 @@
 
 # Ansible for the workbox hosts: lives in the source dir only, never in $HOME.
 infra/
+
+# Repo-only files: docs, tooling and tests live in the source dir, never in $HOME.
+README.md
+Makefile
+docs/
+testing/

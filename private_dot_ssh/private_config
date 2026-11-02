@@ -1,6 +1,0 @@
-# Managed by chezmoi — edit source at ~/.local/share/chezmoi/private_dot_ssh/private_config
-# Dynamic includes (managed by devbox/colima — not chezmoi)
-Include ~/.namespace/ssh/*.ssh
-Include ~/.config/colima/ssh_config
-
-ServerAliveInterval 60
